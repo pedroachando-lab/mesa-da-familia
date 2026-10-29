@@ -2,7 +2,7 @@
 <html lang="pt-PT">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-dJq0HuyBurAIAssZM3V/q6qENiYDceKsKF4E2GYyrH8=' https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://*.googleapis.com https://www.gstatic.com https://*.firebaseio.com wss://*.firebaseio.com https://*.firebaseapp.com; frame-src https://*.firebaseapp.com; worker-src 'self'; manifest-src 'self'; base-uri 'none'; object-src 'none'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-+PA+eOeeMDzypmrx0nmWuFCapdhpV3Kmaqtr4SiGVfI=' https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://*.googleapis.com https://www.gstatic.com https://*.firebaseio.com wss://*.firebaseio.com https://*.firebaseapp.com; frame-src https://*.firebaseapp.com; worker-src 'self'; manifest-src 'self'; base-uri 'none'; object-src 'none'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Mesa da Família</title>
 <meta name="description" content="Receitas para o almoço e jantar da família e lista de compras partilhada.">
@@ -477,7 +477,9 @@ function forget(why){
 function startSync(){
   unsubs.forEach(u=>u()); unsubs=[];
   mode='live'; setMode(); render();
+  // Só a perda de acesso à própria família tira este telemóvel da família; uma lista recusada (ex.: regras antigas) não.
   const denied = err => { console.warn(err); if (err && err.code==='permission-denied' && mode==='live') forget('revoked'); else toast('Sem acesso aos dados da família neste momento.'); };
+  const colErr = col => err => { console.warn(col, err); };
   const today = iso(new Date());
   for (const col of [...COLS,'devices']){
     let first = true;
@@ -486,7 +488,7 @@ function startSync(){
       // Votos e "quem come" de dias que já passaram deixam de ser precisos.
       if (first && !snap.metadata?.fromCache && (col==='votes'||col==='eaters')) [...m].filter(([,v])=>v.date && v.date<today).forEach(([id])=>del(col,id));
       first = false;
-    }, denied));
+    }, colErr(col)));
   }
   unsubs.push(onSnapshot(doc(fs,'families',fam), d=>{
     const k = d.exists() && d.data().joinKey;
