@@ -2,15 +2,15 @@
 <html lang="pt-PT">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-+PA+eOeeMDzypmrx0nmWuFCapdhpV3Kmaqtr4SiGVfI=' https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://*.googleapis.com https://www.gstatic.com https://*.firebaseio.com wss://*.firebaseio.com https://*.firebaseapp.com; frame-src https://*.firebaseapp.com; worker-src 'self'; manifest-src 'self'; base-uri 'none'; object-src 'none'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-tle/L4D5cwlLoPRT95Jt31g3UlYRhS7YQf8ppq4IgI4=' https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://*.googleapis.com https://www.gstatic.com https://*.firebaseio.com wss://*.firebaseio.com https://*.firebaseapp.com; frame-src https://*.firebaseapp.com; worker-src 'self'; manifest-src 'self'; base-uri 'none'; object-src 'none'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mesa da Família</title>
+<title>Refeições &amp; Compras</title>
 <meta name="description" content="Receitas para o almoço e jantar da família e lista de compras partilhada.">
-<meta name="theme-color" content="#F3F5EF" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#111612" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F6F2EA" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#191B15" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Mesa">
+<meta name="apple-mobile-web-app-title" content="Ref. &amp; Compras">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png" type="image/png">
@@ -21,20 +21,27 @@
 <style>
 /* Layout: app de telemóvel numa coluna (máx. 720px), cabeçalho fixo em cima, separadores em baixo, folhas deslizantes para receitas */
 :root{
-  --bg:#F3F5EF; --surface:#FFFFFF; --surface-2:#E7EBE2; --ink:#1C2620; --muted:#5E6B62; --line:#D5DBCF;
-  --basil:#2F5D3A; --basil-ink:#FFFFFF; --tomato:#C8432B; --tomato-ink:#FFFFFF; --done:#DCE1D6; --done-ink:#56635A;
-  --warn:#9A5B00; --shadow:0 1px 2px rgba(28,38,32,.08),0 6px 18px rgba(28,38,32,.06);
+  /* Areia e oliva: fundo areia, verde-oliva para ações, barro para a lista e destaques */
+  --bg:#F6F2EA; --surface:#FFFDF8; --surface-2:#EDE6D8; --ink:#2F3326; --muted:#6B6958; --line:#E3DBCB;
+  --basil:#6E7543; --basil-ink:#FFFFFF; --tomato:#B86B4B; --tomato-ink:#FFFFFF; --done:#E8E1D2; --done-ink:#6B6958;
+  --warn:#9A5B00; --shadow:0 1px 2px rgba(47,51,38,.06),0 6px 18px rgba(47,51,38,.05);
+  --hero:#C9CBA3; --hero-ink:#2F3326; --chip:rgba(255,255,255,.5); --nav:#2F3326; --nav-ink:#B8B39F; --nav-on:#E9D6B5; --nav-active:rgba(233,214,181,.12);
+  --t1:#D8DDB8; --t2:#E9D6B5; --t3:#DCC3B2;
   --f-display:"Bricolage Grotesque","Avenir Next","Segoe UI",system-ui,sans-serif;
   --f-body:"Figtree","Segoe UI",system-ui,-apple-system,sans-serif;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#111612; --surface:#1A211C; --surface-2:#242D27; --ink:#E6ECE4; --muted:#9AA79E; --line:#2F3A32;
-  --basil:#6FAE7C; --basil-ink:#0E1A11; --tomato:#C24A33; --tomato-ink:#FFFFFF; --done:#232B25; --done-ink:#9AA79E;
-  --warn:#E0A44A; --shadow:0 1px 2px rgba(0,0,0,.4); color-scheme:dark }}
+  --bg:#191B15; --surface:#23261D; --surface-2:#2E3226; --ink:#ECE7DA; --muted:#A9A591; --line:#3A3E30;
+  --basil:#B3BA7C; --basil-ink:#1A1C12; --tomato:#C27A5A; --tomato-ink:#FFFFFF; --done:#2A2D22; --done-ink:#A9A591;
+  --warn:#E0A44A; --shadow:0 1px 2px rgba(0,0,0,.4);
+  --hero:#474C32; --hero-ink:#ECE7DA; --chip:rgba(255,255,255,.1); --nav:#111309; --nav-ink:#9C987F; --nav-on:#E9D6B5; --nav-active:rgba(233,214,181,.1);
+  --t1:#3E4430; --t2:#4A3F2C; --t3:#4A3A30; color-scheme:dark }}
 :root[data-theme="dark"]{
-  --bg:#111612; --surface:#1A211C; --surface-2:#242D27; --ink:#E6ECE4; --muted:#9AA79E; --line:#2F3A32;
-  --basil:#6FAE7C; --basil-ink:#0E1A11; --tomato:#C24A33; --tomato-ink:#FFFFFF; --done:#232B25; --done-ink:#9AA79E;
-  --warn:#E0A44A; --shadow:0 1px 2px rgba(0,0,0,.4); color-scheme:dark }
+  --bg:#191B15; --surface:#23261D; --surface-2:#2E3226; --ink:#ECE7DA; --muted:#A9A591; --line:#3A3E30;
+  --basil:#B3BA7C; --basil-ink:#1A1C12; --tomato:#C27A5A; --tomato-ink:#FFFFFF; --done:#2A2D22; --done-ink:#A9A591;
+  --warn:#E0A44A; --shadow:0 1px 2px rgba(0,0,0,.4);
+  --hero:#474C32; --hero-ink:#ECE7DA; --chip:rgba(255,255,255,.1); --nav:#111309; --nav-ink:#9C987F; --nav-on:#E9D6B5; --nav-active:rgba(233,214,181,.1);
+  --t1:#3E4430; --t2:#4A3F2C; --t3:#4A3A30; color-scheme:dark }
 *{box-sizing:border-box}
 :root{padding-top:env(safe-area-inset-top,0px)}
 body{margin:0}
@@ -49,7 +56,8 @@ button{cursor:pointer}
 .wrap{max-width:720px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);border-bottom:1px solid var(--line)}
 header.top .wrap{display:flex;align-items:center;gap:12px;padding-block:12px}
-.brand{font-family:var(--f-display);font-weight:800;font-size:22px;letter-spacing:-.01em;margin:0;flex:1}
+.brand{font-family:var(--f-display);font-weight:800;font-size:21px;letter-spacing:-.01em;margin:0;flex:1;white-space:nowrap}
+@media (max-width:390px){.mode span{display:none}.brand{font-size:19px}}
 .brand span{color:var(--tomato)}
 .mode{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;white-space:nowrap}
 .mode i{width:8px;height:8px;border-radius:50%;background:var(--muted);display:inline-block}
@@ -120,6 +128,22 @@ h3{font-family:var(--f-display);font-weight:600;font-size:17px;margin:0}
 .quick button{border:1px dashed var(--line);background:var(--surface);border-radius:12px;padding:8px 12px;font-weight:600;font-size:14px;display:flex;gap:6px;align-items:center}
 .quick button:hover{border-color:var(--tomato)}
 
+/* Hoje */
+.hero{background:var(--hero);color:var(--hero-ink);border-radius:22px;padding:18px;display:flex;flex-direction:column;gap:10px}
+.hero .eyebrow{color:inherit;opacity:.75}
+.hero h2{font-size:28px}
+.hero .meta{color:inherit;opacity:.8;margin:0}
+.hchips{display:flex;gap:6px;flex-wrap:wrap}
+.hchips span{background:var(--chip);border-radius:999px;padding:4px 11px;font-weight:700;font-size:13px}
+.hero .btn.ghost{background:var(--chip);color:var(--hero-ink)}
+.ctiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.ctile{border:0;border-radius:16px;aspect-ratio:1.15;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-weight:700;color:var(--ink);text-align:center;padding:6px}
+.ctile:nth-child(3n+1){background:var(--t1)}.ctile:nth-child(3n+2){background:var(--t2)}.ctile:nth-child(3n){background:var(--t3)}
+.ctile .em{font-size:26px;line-height:1.1}
+.ctile small{font-weight:600;color:var(--muted);font-size:12px}
+.sec-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.group .card h3{font-family:var(--f-display);font-weight:600;font-size:17px;text-transform:none;letter-spacing:0;color:var(--ink)}
+
 /* Plano */
 .days{display:flex;flex-direction:column;gap:10px}
 .day{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 14px;display:grid;grid-template-columns:76px 1fr;gap:4px 12px;align-items:start}
@@ -152,11 +176,11 @@ h3{font-family:var(--f-display);font-weight:600;font-size:17px;margin:0}
 .counts{font-variant-numeric:tabular-nums}
 
 /* Barra de separadores */
-nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
-nav.tabs .wrap{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding-block:6px}
-nav.tabs button{border:0;background:transparent;border-radius:12px;padding:8px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;font-weight:600;color:var(--muted);position:relative}
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--nav);padding-bottom:env(safe-area-inset-bottom,0px);border-radius:18px 18px 0 0}
+nav.tabs .wrap{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding-block:6px}
+nav.tabs button{border:0;background:transparent;border-radius:12px;padding:8px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;font-weight:600;color:var(--nav-ink);position:relative}
 nav.tabs button svg{width:24px;height:24px}
-nav.tabs button[aria-current="page"]{color:var(--ink);background:var(--surface-2)}
+nav.tabs button[aria-current="page"]{color:var(--nav-on);background:var(--nav-active)}
 .badge{position:absolute;top:2px;left:calc(50% + 8px);background:var(--tomato);color:var(--tomato-ink);font-size:11px;min-width:20px;height:20px;border-radius:10px;display:grid;place-items:center;padding:0 5px;font-variant-numeric:tabular-nums}
 
 /* Folha */
@@ -216,7 +240,7 @@ ol{margin:10px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
 <body>
 
 <header class="top"><div class="wrap">
-  <h1 class="brand">Mesa da <span>Família</span></h1>
+  <h1 class="brand">Refeições <span>&amp;</span> Compras</h1>
   <div class="mode" id="mode"><i></i><span>A ligar…</span></div>
   <button class="x" data-act="family" aria-label="Família, convites e avisos" title="Família, convites e avisos"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20a6 6 0 0 1 12 0"/><circle cx="17" cy="9" r="2.5"/><path d="M15.5 14.2A5 5 0 0 1 21 19"/></svg></button>
 </div></header>
@@ -224,7 +248,8 @@ ol{margin:10px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
 <main><div class="wrap" id="view"></div></main>
 
 <nav class="tabs" aria-label="Secções"><div class="wrap">
-  <button data-tab="sugestoes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11h16a8 8 0 0 1-16 0Z"/><path d="M12 3v3M8 4.5l1 2M16 4.5l-1 2"/></svg>Sugestões</button>
+  <button data-tab="hoje"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-5h4v5"/></svg>Hoje</button>
+  <button data-tab="sugestoes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11h16a8 8 0 0 1-16 0Z"/><path d="M12 3v3M8 4.5l1 2M16 4.5l-1 2"/></svg>Receitas</button>
   <button data-tab="plano"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Plano</button>
   <button data-tab="lista"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7h14l-1.5 12.5a1.5 1.5 0 0 1-1.5 1.5H8a1.5 1.5 0 0 1-1.5-1.5Z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg>Lista<span class="badge" id="badge" hidden>0</span></button>
 </div></nav>
@@ -508,7 +533,7 @@ async function createFamily(){
 }
 async function joinFamily(text){
   const inv = parseInvite(text);
-  if (!inv) return toast('Este link não parece um convite da Mesa da Família.');
+  if (!inv) return toast('Este link não parece um convite da app Refeições & Compras.');
   if (!inv.k) return toast('Este convite é antigo. Peça o link novo a quem criou a família.');
   if (!uid) return toast('Ainda a ligar ao servidor. Tente daqui a pouco.');
   if (await enter(inv.f, inv.k)) toast('Entrou na família. Bem-vindo!');
@@ -620,7 +645,7 @@ function openFamily(){
       if (act==='fam-alerts') enableAlerts();
       else if (act==='fam-install' && installEvt){ installEvt.prompt(); await installEvt.userChoice.catch(()=>{}); installEvt=null; draw(); }
       else if (act==='fam-share'){
-        const data = {title:'Mesa da Família', text:'Junta-te à nossa lista de compras e ao plano de refeições:', url:inviteUrl()};
+        const data = {title:'Refeições & Compras', text:'Junta-te às refeições e à lista de compras da família:', url:inviteUrl()};
         if (navigator.share) navigator.share(data).catch(()=>{}); else copyInvite();
       }
       else if (act==='fam-copy') copyInvite();
@@ -650,7 +675,7 @@ const NOTES = {
 function renderWelcome(){
   const blocked = note==='auth' || note==='offline';
   return `
-  <div><div class="eyebrow">Bem-vindos</div><h2>Mesa da Família</h2><p class="muted" style="margin:6px 0 0">Receitas para o almoço e jantar, plano da semana e lista de compras partilhada por toda a família.</p></div>
+  <div><div class="eyebrow">Bem-vindos</div><h2>Refeições &amp; Compras</h2><p class="muted" style="margin:6px 0 0">Receitas para o almoço e jantar, plano da semana e lista de compras partilhada por toda a família.</p></div>
   ${note ? `<div class="confirm note" role="alert">${esc(NOTES[note]||'')}</div>`:''}
   <section class="today" style="flex-direction:column;align-items:stretch;gap:10px"><h3>Já há uma família criada?</h3>
     <p class="muted" style="margin:0">Peça o link de convite a quem criou e abra-o neste telemóvel. Também o pode colar aqui.</p>
@@ -815,8 +840,8 @@ function unplan(pid, silent){
 }
 
 /* ---------- Vistas ---------- */
-let tab = 'sugestoes';
-try{ tab = localStorage.getItem('mesa-tab') || 'sugestoes'; }catch(e){}
+/* A app abre sempre no ecrã Hoje */
+let tab = 'hoje';
 const ds0 = days();
 const ui = { healthy: ls.get('mesa-saudavel')==='1', date: iso(ds0[0]), slot: new Date().getHours()<15 ? 'almoco':'jantar', filter:'todos', shuffle:0, more:false, planAsk:false };
 
@@ -882,6 +907,43 @@ function planWeek(){
     }
   }
   toast(n ? `${n} refeiç${n>1?'ões planeadas':'ão planeada'}. Os ingredientes estão na lista.` : 'A semana já está toda planeada.');
+}
+
+const DOWL = ['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
+/* Ecrã Hoje: a próxima refeição de hoje, os votos, amanhã e um resumo da lista */
+function renderHoje(){
+  const d = new Date(), today = iso(d);
+  const slot = slotsFor(today).includes('almoco') && d.getHours()<15 ? 'almoco' : 'jantar';
+  const ref = slot==='almoco' ? 'almoço' : 'jantar';
+  const pid = today+'_'+slot, p = S.plan.get(pid);
+  const votes = votesFor(pid), nVotes = votes.reduce((n,v)=>n+v.mids.length,0), people = peopleFor(pid);
+  const toBuy = [...S.items.values()].filter(i=>!i.bought);
+  const tom = days(2)[1], tIso = iso(tom);
+  const marmita = (S.plan.get(today+'_jantar')||{}).double;
+  const tomorrow = slotsFor(tIso).map(k=>[k, S.plan.get(tIso+'_'+k)]);
+  const ideas = p ? [] : suggest(today, slot, {filter:'todos', shuffle:0}).list.filter(r=>!votes.some(v=>v.r.id===r.id)).slice(0,2);
+  const cats = CATS.map(([c,l])=>[c,l,toBuy.filter(i=>(i.cat||'out')===c)]).filter(x=>x[2].length).sort((a,b)=>b[2].length-a[2].length).slice(0,3);
+  const card = r => `<button class="card" data-act="open" data-id="${esc(r.id)}" data-date="${today}" data-slot="${slot}"><span class="em" aria-hidden="true">${esc(MAIN_EMOJI(r))}</span><div><h3>${S.favs.has(r.id)?'⭐ ':''}${esc(r.t)}</h3><div class="meta">${r.min?r.min+' min':''}${effort(r)?' · '+effort(r):''}</div></div></button>`;
+  return `
+  <section class="hero" aria-labelledby="hoje-t">
+    <div class="eyebrow">Hoje, ${DOWL[d.getDay()]} ${d.getDate()} ${MON[d.getMonth()]}${holiday(d)?' · '+esc(holiday(d)):''}</div>
+    <h2 id="hoje-t">${p ? esc(p.title) : `O que vamos ${slot==='almoco'?'almoçar':'jantar'}?`}</h2>
+    ${p ? `<p class="meta">Já está escolhido para o ${ref}${p.double?' e fica a dobrar para a marmita de amanhã':''}.</p>` : ''}
+    <div class="hchips">${!p ? `<span>👍 ${nVotes} ${nVotes===1?'voto':'votos'}</span>`:''}<span>${people} ${people===1?'pessoa':'pessoas'}</span><span>🛒 ${toBuy.length} por comprar</span></div>
+    <div class="row">${p ? `<button class="btn" data-act="open" data-id="${esc(p.recipeId)}" data-date="${today}" data-slot="${slot}">Ver a receita</button>`
+      : votes.length ? `<button class="btn" data-act="open" data-id="${esc(votes[0].r.id)}" data-date="${today}" data-slot="${slot}">Escolher o mais votado</button><button class="btn ghost" data-act="pick" data-date="${today}" data-slot="${slot}">Ver sugestões</button>`
+      : `<button class="btn" data-act="pick" data-date="${today}" data-slot="${slot}">Escolher o ${ref}</button>`}</div>
+  </section>
+  ${!p && votes.length ? `<section class="votes" aria-label="Votos"><div class="eyebrow">Mais votados</div>${votes.slice(0,3).map(v=>`<button class="vote-row" data-act="open" data-id="${esc(v.r.id)}" data-date="${today}" data-slot="${slot}"><span>${esc(v.r.t)}<small>${esc(nameList(v.mids))}</small></span><b class="n">${v.mids.length}</b></button>`).join('')}</section>` : ''}
+  ${ideas.length ? `<section class="group"><div class="sec-h"><h3>Sugestões para hoje</h3><button class="link" data-act="pick" data-date="${today}" data-slot="${slot}">Ver mais</button></div><div class="cards">${ideas.map(card).join('')}</div></section>` : ''}
+  <section class="group"><h3>Amanhã, ${DOWL[tom.getDay()]}</h3>
+    <div class="slots">${marmita && !S.plan.has(tIso+'_almoco') ? `<div class="slot"><span class="lbl">Almoço</span><span class="val marmita">🍱 Marmita: ${esc(S.plan.get(today+'_jantar').title)}</span></div>`:''}${tomorrow.map(([k,tp])=>`
+      <div class="slot"><span class="lbl">${SLOTS[k]}</span>${tp ? `<button class="val" data-act="open" data-id="${esc(tp.recipeId)}" data-date="${tIso}" data-slot="${k}">${esc(tp.title)}</button>` : `<button class="val empty" data-act="pick" data-date="${tIso}" data-slot="${k}">+ Escolher</button>`}</div>`).join('')}</div>
+  </section>
+  <section class="group"><div class="sec-h"><h3>Lista de compras</h3><button class="link" data-act="tab" data-v="lista">Abrir lista</button></div>
+    ${cats.length ? `<div class="ctiles">${cats.map(([c,l,arr])=>`<button class="ctile" data-act="tab" data-v="lista"><span class="em" aria-hidden="true">${esc(arr[0].emoji||'🛒')}</span>${esc(l)}<small>${arr.length} ${arr.length===1?'artigo':'artigos'}</small></button>`).join('')}</div>`
+      : `<div class="empty"><b>Nada por comprar</b>Quando escolher uma refeição, os ingredientes aparecem na lista.</div>`}
+  </section>`;
 }
 
 function renderSugestoes(){
@@ -987,7 +1049,7 @@ function renderLista(){
   </form>
   <datalist id="ing-list">${Object.keys(ING_RAW).map(k=>`<option value="${esc(k.charAt(0).toUpperCase()+k.slice(1))}">`).join('')}</datalist>
   ${groups.length ? groups.map(([l,arr])=>`<section class="group"><h3>${esc(l)}</h3><div class="tiles">${arr.map(([k,it])=>tile(it,k,false)).join('')}</div></section>`).join('')
-   : `<div class="empty"><b>A lista está vazia</b>Escolha uma refeição em Sugestões e os ingredientes aparecem aqui, ou adicione um artigo acima.</div>`}
+   : `<div class="empty"><b>A lista está vazia</b>Escolha uma refeição em Receitas e os ingredientes aparecem aqui, ou adicione um artigo acima.</div>`}
   ${items.length ? `<p class="muted" style="margin:0;font-size:13px">Toque num artigo quando o puser no carrinho. O × elimina-o se não for preciso.</p>`:''}
   <section class="group"><div class="row" style="justify-content:space-between"><h3>Outros produtos</h3><button class="link" data-act="qedit">${ui.qedit?'Concluído':'Editar'}</button></div>
     <div class="muted" style="font-size:13px">${ui.qedit ? 'Toque num produto para o tirar dos frequentes. Vale para toda a família.' : 'Toque para juntar à lista. Para uma compra pontual, escreva-a no campo acima (ex.: Água 6 l).'}</div>
@@ -1004,7 +1066,7 @@ function render(){
   const v = $('#view');
   const aid = document.activeElement && ['addname','quickname'].includes(document.activeElement.id) ? document.activeElement.id : null;
   const active = aid ? $('#'+aid).value : null;
-  v.innerHTML = mode==='welcome' ? renderWelcome() : tab==='plano' ? renderPlano() : tab==='lista' ? renderLista() : renderSugestoes();
+  v.innerHTML = mode==='welcome' ? renderWelcome() : tab==='hoje' ? renderHoje() : tab==='plano' ? renderPlano() : tab==='lista' ? renderLista() : renderSugestoes();
   if (active!==null && $('#'+aid)){ $('#'+aid).value = active; $('#'+aid).focus(); }
   document.querySelectorAll('nav.tabs button').forEach(b=>b.setAttribute('aria-current', b.dataset.tab===tab?'page':'false'));
   const n = [...S.items.values()].filter(i=>!i.bought).length;
@@ -1166,6 +1228,7 @@ document.addEventListener('click', e=>{
     case 'qadd': ui.qadd=true; render(); setTimeout(()=>$('#quickname')&&$('#quickname').focus(),30); break;
     case 'qadd-no': ui.qadd=false; render(); break;
     case 'qdel': put('quick', a.dataset.k, {name:a.dataset.v, hidden:true, t:Date.now()}); toast(a.dataset.v+' saiu dos produtos frequentes'); break;
+    case 'tab': tab=a.dataset.v; render(); window.scrollTo(0,0); break;
     case 'plan-ask': ui.planAsk=true; render(); break;
     case 'plan-no': ui.planAsk=false; render(); break;
     case 'plan-yes': ui.planAsk=false; planWeek(); break;
