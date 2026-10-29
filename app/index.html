@@ -2,6 +2,7 @@
 <html lang="pt-PT">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-lmQn+f6AmYlKMRpDeiuabptV54fOuh7VU+zkMaP5ReE=' https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://*.googleapis.com https://www.gstatic.com https://*.firebaseio.com wss://*.firebaseio.com https://*.firebaseapp.com; frame-src https://*.firebaseapp.com; worker-src 'self'; manifest-src 'self'; base-uri 'none'; object-src 'none'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Mesa da Família</title>
 <meta name="description" content="Receitas para o almoço e jantar da família e lista de compras partilhada.">
@@ -87,6 +88,14 @@ h3{font-family:var(--f-display);font-weight:600;font-size:17px;margin:0}
 .tag{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:1px 6px;margin-right:4px}
 .planned{color:var(--basil);font-weight:600}
 .tag.hot{color:var(--tomato);border-color:var(--tomato)}
+.tag.ok{color:var(--basil);border-color:var(--basil)}
+.healthy{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:12px;align-items:center;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:10px 14px;font-weight:700}
+.healthy small{grid-column:2;font-weight:500;color:var(--muted);font-size:12px}
+.healthy .sw{grid-row:span 2;width:40px;height:24px;border-radius:12px;background:var(--surface-2);position:relative;transition:background .15s}
+.healthy .sw::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--muted);transition:transform .15s}
+.healthy[aria-pressed="true"]{border-color:var(--basil)}
+.healthy[aria-pressed="true"] .sw{background:var(--basil)}
+.healthy[aria-pressed="true"] .sw::after{transform:translateX(16px);background:var(--surface)}
 .chip.hol{border-color:var(--tomato)}
 .kind{font-size:14px;color:var(--muted);display:flex;gap:8px;align-items:center}
 .kind::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--basil);flex:none}
@@ -171,6 +180,30 @@ ol{margin:10px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
 .note{font-size:13px;color:var(--warn)}
 .confirm{display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
 
+/* Pessoas, votos e doses */
+.people{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.people .chip{padding:6px 12px}
+.people .chip[aria-pressed="false"]{color:var(--muted);text-decoration:line-through}
+.stepper{display:inline-flex;align-items:center;gap:4px;background:var(--surface-2);border-radius:12px;padding:3px}
+.stepper button{border:0;background:var(--surface);border-radius:9px;width:34px;height:34px;font-weight:700;font-size:18px}
+.stepper b{min-width:28px;text-align:center;font-variant-numeric:tabular-nums}
+.votes{display:flex;flex-direction:column;gap:6px}
+.vote-row{display:flex;align-items:center;gap:10px;border:0;background:var(--surface-2);border-radius:10px;padding:8px 10px;text-align:left;width:100%}
+.vote-row span{flex:1;min-width:0}
+.vote-row small{display:block;color:var(--muted);font-size:12px}
+.vote-row b.n{font-variant-numeric:tabular-nums;background:var(--basil);color:var(--basil-ink);border-radius:999px;min-width:28px;text-align:center;padding:2px 8px}
+.tag.vote{color:var(--basil);border-color:var(--basil)}
+.check{display:flex;gap:10px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-weight:600;cursor:pointer}
+.check input{width:22px;height:22px;accent-color:var(--basil);flex:none}
+.check small{display:block;font-weight:500;color:var(--muted);font-size:12px}
+.member{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line)}
+.member:first-of-type{border-top:0}
+.member > div{flex:1;min-width:0}
+.member small{display:block;color:var(--muted);font-size:13px;overflow-wrap:anywhere}
+.mform{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+.slot .val small{font-weight:500;color:var(--muted)}
+.slot .val.marmita{background:transparent;border:1px solid var(--line);font-weight:500;cursor:default}
+
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:50;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-weight:600;font-size:14px;max-width:calc(100% - 32px);box-shadow:var(--shadow)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -197,12 +230,13 @@ ol{margin:10px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
 <script src="firebase-config.js"></script>
 <script type="module">
 const FB = 'https://www.gstatic.com/firebasejs/10.12.2/';
-let initializeApp, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, onSnapshot, setDoc, deleteDoc, getMessaging, getToken, isSupported;
+let initializeApp, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, onSnapshot, getDoc, setDoc, deleteDoc, getMessaging, getToken, isSupported, getAuth, signInAnonymously, onAuthStateChanged;
 async function loadFirebase(){
-  const [a, f, m] = await Promise.all([import(FB+'firebase-app.js'), import(FB+'firebase-firestore.js'), import(FB+'firebase-messaging.js')]);
+  const [a, f, m, u] = await Promise.all([import(FB+'firebase-app.js'), import(FB+'firebase-firestore.js'), import(FB+'firebase-messaging.js'), import(FB+'firebase-auth.js')]);
   ({initializeApp} = a);
-  ({initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, onSnapshot, setDoc, deleteDoc} = f);
+  ({initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, onSnapshot, getDoc, setDoc, deleteDoc} = f);
   ({getMessaging, getToken, isSupported} = m);
+  ({getAuth, signInAnonymously, onAuthStateChanged} = u);
 }
 
 /* ---------- Catálogo de ingredientes ---------- */
@@ -236,7 +270,7 @@ const ING_RAW = {
   'pilhas':['🔋','casa'],'febras':['🥩','talho'],'piri-piri':['🌶️','desp'],'pao ralado':['🍞','merc'],'douradinhos':['🐟','cong'],
   'abacate':['🥑','hort'],'cuscuz':['🍚','merc'],'hortela':['🌿','hort'],'lulas':['🦑','talho'],'pao de forma':['🍞','pad'],
   'linguica':['🌭','talho'],'salsichas':['🌭','talho'],'cerveja':['🍺','merc'],'cominhos':['🌿','desp'],'tamboril':['🐟','talho'],
-  'peixe':['🐟','talho'],'feta':['🧀','lat'],'massa quebrada':['🥧','merc'],'bife':['🥩','talho'],'comida para o gato':['🐈','out'],'comida para o cao':['🐕','out']
+  'peixe':['🐟','talho'],'quinoa':['🍚','merc'],'soja':['🫙','merc'],'sesamo':['🌰','merc'],'feta':['🧀','lat'],'massa quebrada':['🥧','merc'],'bife':['🥩','talho'],'comida para o gato':['🐈','out'],'comida para o cao':['🐕','out']
 };
 /* Produtos frequentes fora das receitas, para juntar à lista com um toque */
 const QUICK = ['Leite','Pão','Ovos','Café','Cereais','Iogurtes','Manteiga','Fruta','Bananas','Sumo','Água','Bolachas',
@@ -307,28 +341,45 @@ const BASE = [
  {id:'frango-churrasco',t:'Frango de churrasco caseiro',m:['almoco','jantar'],tags:['carne','forno'],min:60,ing:['Frango aberto|1','Piri-piri|q.b.','Limão|1','Alho|4 dentes','Manteiga|50 g','Batatas fritas congeladas|1 saco','Alface|1','Tomate|2'],st:['Tempere o frango com alho, sal, limão e piri-piri e deixe 30 minutos.','Grelhe no grelhador ou forno a 220 °C cerca de 40 minutos, virando a meio.','Pincele com manteiga derretida com piri-piri nos últimos 10 minutos.','Sirva com batatas fritas e salada.']},
  {id:'lasanha-carne',t:'Lasanha de carne',m:['almoco','jantar'],tags:['carne','forno'],min:80,ing:['Folhas de lasanha|1 pacote','Carne picada|600 g','Polpa de tomate|1 pacote','Cebola|1','Cenoura|1','Leite|600 ml','Farinha|4 c. sopa','Manteiga|50 g','Mozarela|250 g'],st:['Faça um molho de carne com cebola, cenoura, carne picada e polpa de tomate (30 minutos).','Faça o bechamel com manteiga, farinha e leite.','Monte camadas de massa, carne e bechamel.','Cubra com mozarela e leve ao forno a 190 °C durante 35 minutos.','Deixe repousar 10 minutos antes de cortar.']},
  {id:'caldeirada',t:'Caldeirada de peixe',m:['almoco','jantar'],tags:['peixe'],min:70,ing:['Peixe variado (raia, cação, safio)|1,2 kg','Batatas|800 g','Cebolas|3','Tomate|4','Pimento|1','Alho|4 dentes','Vinho branco|1 copo','Louro|2 folhas','Salsa|1 molho'],st:['Corte as cebolas, as batatas, os tomates e o pimento às rodelas.','Num tacho, faça camadas de cebola, batata, peixe, tomate e pimento, temperando cada uma.','Junte o alho, o louro, o vinho, um bom fio de azeite e um pouco de água.','Coza tapado em lume brando 40 minutos, sem mexer, só abanando o tacho.','Termine com salsa.']},
- {id:'quiche-espinafres',t:'Quiche de espinafres e feta',m:['jantar','almoco'],tags:['vegetariano','forno'],min:55,ing:['Massa quebrada|1','Espinafres|300 g','Ovos|4','Natas|200 ml','Queijo feta|150 g','Cebola|1'],st:['Forre uma tarteira com a massa e pique o fundo.','Salteie a cebola e os espinafres até murcharem e escorra bem.','Bata os ovos com as natas, sal e pimenta.','Espalhe os espinafres e o feta na massa e verta os ovos.','Forno a 180 °C durante 35 minutos.']}
+ {id:'quiche-espinafres',t:'Quiche de espinafres e feta',m:['jantar','almoco'],tags:['vegetariano','forno'],min:55,ing:['Massa quebrada|1','Espinafres|300 g','Ovos|4','Natas|200 ml','Queijo feta|150 g','Cebola|1'],st:['Forre uma tarteira com a massa e pique o fundo.','Salteie a cebola e os espinafres até murcharem e escorra bem.','Bata os ovos com as natas, sal e pimenta.','Espalhe os espinafres e o feta na massa e verta os ovos.','Forno a 180 °C durante 35 minutos.']},
+ /* Refeições saudáveis */
+ {id:'salada-quinoa',t:'Salada de quinoa com grão',m:['jantar','almoco'],tags:['vegetariano','rapido'],min:20,ing:['Quinoa|250 g','Grão-de-bico (lata)|1','Pepino|1','Tomate cherry|250 g','Cebola roxa|1','Salsa|1 molho','Limão|1','Azeite|q.b.'],st:['Lave a quinoa e coza 12 minutos em água com sal. Escorra e deixe arrefecer.','Corte o pepino, o tomate e a cebola em pedaços pequenos.','Junte o grão escorrido e a salsa picada.','Tempere com sumo de limão, azeite, sal e pimenta.']},
+ {id:'frango-legumes',t:'Frango grelhado com legumes salteados',m:['jantar','almoco'],tags:['carne','rapido'],min:25,ing:['Peito de frango|600 g','Curgete|1','Pimento|1','Cenouras|2','Brócolos|1','Alho|2 dentes','Limão|1'],st:['Tempere o frango com alho, limão e sal.','Grelhe numa frigideira antiaderente 5 a 6 minutos de cada lado.','Salteie os legumes cortados em tiras com um fio de azeite, 6 a 8 minutos, mantendo-os estaladiços.','Sirva o frango fatiado sobre os legumes.']},
+ {id:'sopa-peixe',t:'Sopa de peixe',m:['jantar','almoco'],tags:['peixe','sopa'],min:45,ing:['Postas de pescada|2','Camarão|200 g','Batatas|3','Cebola|1','Tomate|2','Cenouras|2','Coentros|1 molho','Massa cotovelinhos|100 g'],st:['Coza a pescada e o camarão em 1,5 L de água com sal 10 minutos. Retire, limpe e desfaça.','No caldo, coza a batata, a cebola, o tomate e a cenoura 20 minutos e triture.','Junte a massa e coza 8 minutos.','Junte o peixe e o camarão e termine com coentros.']},
+ {id:'bowl-salmao',t:'Taça de salmão com arroz integral',m:['jantar','almoco'],tags:['peixe','rapido'],min:30,ing:['Lombos de salmão|4','Arroz integral|300 g','Abacate|1','Pepino|1','Cenouras|2','Molho de soja|q.b.','Sésamo|q.b.'],st:['Coza o arroz integral (cerca de 25 minutos).','Grelhe o salmão 4 minutos de cada lado e desfaça em lascas.','Corte o abacate, o pepino e a cenoura em tiras finas.','Monte em taças: arroz, salmão e legumes. Tempere com um pouco de soja e sésamo.']},
+ {id:'pescada-forno-legumes',t:'Pescada no forno com legumes',m:['jantar','almoco'],tags:['peixe','forno'],min:35,ing:['Postas de pescada|4','Batata-doce|2','Curgete|1','Tomate|2','Cebola|1','Limão|1','Azeite|q.b.'],st:['Corte a batata-doce em rodelas finas e asse 10 minutos a 200 °C.','Junte a curgete, o tomate e a cebola às rodelas.','Coloque a pescada temperada com limão por cima e regue com um fio de azeite.','Asse mais 20 minutos.']},
+ {id:'omelete-legumes',t:'Omelete de espinafres e cogumelos',m:['jantar'],tags:['vegetariano','rapido'],min:15,ing:['Ovos|8','Espinafres|150 g','Cogumelos|200 g','Cebola|1','Alface|1','Tomate|2'],st:['Salteie a cebola e os cogumelos laminados, junte os espinafres até murcharem.','Bata os ovos com sal e verta sobre os legumes.','Coza em lume brando, dobre e sirva com salada.']},
+ {id:'peru-estufado',t:'Peru estufado com legumes',m:['jantar','almoco'],tags:['carne'],min:40,ing:['Peito de peru em cubos|700 g','Cenouras|3','Ervilhas|200 g','Cebola|1','Tomate|2','Arroz integral|300 g','Louro|1 folha'],st:['Ponha o arroz integral a cozer.','Aloure o peru com um fio de azeite e reserve.','Refogue a cebola e o tomate, junte a cenoura às rodelas, o louro e um copo de água.','Junte o peru e as ervilhas e coza tapado 20 minutos.']}
 ];
+/* Pratos com muitos legumes, peixe ou carnes magras e pouca gordura */
+const HEALTHY = new Set(['sopa-legumes','salmao-forno','peru-arroz','dourada','caril-grao','pescada-todos','lulas-grelhadas','cuscuz-legumes','bolonhesa-lentilhas','bacalhau-grao','empadao-lentilhas','hamburguer-grao','caldeirada','massa-pesto','salada-quinoa','frango-legumes','sopa-peixe','bowl-salmao','pescada-forno-legumes','omelete-legumes','peru-estufado']);
+BASE.forEach(r=>{ if (HEALTHY.has(r.id)) r.tags.push('saudavel'); });
 const MAIN_EMOJI = r => {
   for (const s of r.ing){ const [e,c] = lookup(s.split('|')[0]); if (c==='talho') return e; }
   if (r.tags.includes('sopa')) return '🥣';
   return lookup(r.ing[0].split('|')[0])[0];
 };
-const TAGS = {rapido:'Rápido',peixe:'Peixe',carne:'Carne',vegetariano:'Vegetariano',sopa:'Sopa',forno:'Forno'};
+const TAGS = {saudavel:'Saudável',rapido:'Rápido',peixe:'Peixe',carne:'Carne',vegetariano:'Vegetariano',sopa:'Sopa',forno:'Forno'};
 const SLOTS = {almoco:'Almoço',jantar:'Jantar'};
 const CHOICE = [['todos','🍽️','Todas'],['carne','🥩','Carne'],['peixe','🐟','Peixe'],['vegetariano','🥦','Vegetariano']];
 
 /* ---------- Estado partilhado ---------- */
-const S = {items:new Map(), plan:new Map(), recipes:new Map()};
-/* Os dados de cada família ficam em families/<código>/{items,plan,recipes,tokens} no Firestore.
-   O código é aleatório e só é conhecido por quem recebe o convite. */
-let mode = 'loading', readOnly = false, fs = null, fbApp = null, fam = null;
+const COLS = ['items','plan','recipes','members','votes','eaters'];
+const S = {items:new Map(), plan:new Map(), recipes:new Map(), members:new Map(), votes:new Map(), eaters:new Map(), devices:new Map()};
+/* Segurança: cada telemóvel entra com uma sessão anónima do Firebase. Só os telemóveis que abriram o convite
+   (código da família + chave secreta) ficam registados em families/<código>/devices, e as regras do Firestore
+   só deixam esses ler ou alterar os dados da família. */
+let mode = 'loading', readOnly = false, fs = null, fbApp = null, auth = null, uid = null, fam = null, famKey = null, unsubs = [], note = null;
 const CFG = window.FIREBASE_CONFIG || {};
 const configured = !!(CFG.apiKey && !String(CFG.apiKey).startsWith('COLE'));
-const LS = 'mesa-familia-local-v1', FKEY = 'mesa-familia-id', AKEY = 'mesa-familia-avisos';
-const ls = { get(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }, set(k,v){ try{ localStorage.setItem(k,v); }catch(e){} } };
-function saveLocal(){ if (mode!=='local') return; ls.set(LS, JSON.stringify({items:[...S.items],plan:[...S.plan],recipes:[...S.recipes]})); }
-function loadLocal(){ try{ const d = JSON.parse(ls.get(LS)||'null'); if (d){ S.items=new Map(d.items); S.plan=new Map(d.plan); S.recipes=new Map(d.recipes); } }catch(e){} }
+const LS = 'mesa-familia-local-v1', FKEY = 'mesa-familia-id', KKEY = 'mesa-familia-chave', AKEY = 'mesa-familia-avisos', MEKEY = 'mesa-eu';
+const ls = {
+  get(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } },
+  set(k,v){ try{ localStorage.setItem(k,v); }catch(e){} },
+  del(k){ try{ localStorage.removeItem(k); }catch(e){} }
+};
+function saveLocal(){ if (mode!=='local') return; ls.set(LS, JSON.stringify(Object.fromEntries(COLS.map(c=>[c,[...S[c]]])))); }
+function loadLocal(){ try{ const d = JSON.parse(ls.get(LS)||'null'); if (d) COLS.forEach(c=>{ if (Array.isArray(d[c])) S[c]=new Map(d[c]); }); }catch(e){} }
 
 function put(col,id,data){
   S[col].set(id,data); render();
@@ -341,22 +392,29 @@ function del(col,id){
   return deleteDoc(doc(fs,'families',fam,col,id)).catch(writeErr);
 }
 function writeErr(e){
-  if (e && e.code==='permission-denied') toast('O servidor recusou a alteração. Confirme as regras do Firestore.');
+  if (e && e.code==='permission-denied') toast('O servidor recusou a alteração. Este telemóvel pode ter perdido o acesso.');
   else if (e && e.code==='resource-exhausted') toast('Atingiu o limite diário gratuito do Firebase. Tente amanhã.');
   else toast('Não foi possível guardar. Verifique a ligação e tente outra vez.');
   console.warn(e);
 }
 
+const randomId = n => { const abc='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_'; return Array.from(crypto.getRandomValues(new Uint8Array(n)), b=>abc[b&63]).join(''); };
+function parseInvite(text){
+  const s = String(text||'').trim();
+  const f = s.match(/(?:^|[#&?])f=([A-Za-z0-9_-]{20,64})(?=$|&)/), k = s.match(/(?:^|[#&?])k=([A-Za-z0-9_-]{20,64})(?=$|&)/);
+  return f ? {f:f[1], k:k ? k[1] : null} : null;
+}
 function readFamily(){
-  const m = location.hash.match(/f=([A-Za-z0-9_-]{20,})/);
-  if (m){ ls.set(FKEY, m[1]); history.replaceState(null,'',location.pathname+location.search); return m[1]; }
-  return ls.get(FKEY);
+  const inv = parseInvite(location.hash);
+  if (inv){
+    history.replaceState(null,'',location.pathname+location.search);
+    if (inv.k){ ls.set(FKEY, inv.f); ls.set(KKEY, inv.k); }
+    else if (inv.f!==ls.get(FKEY)){ ls.set(FKEY, inv.f); ls.del(KKEY); }
+  }
+  return {f:ls.get(FKEY), k:ls.get(KKEY)};
 }
-function newFamilyId(){
-  const abc='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_';
-  return Array.from(crypto.getRandomValues(new Uint8Array(24)), b=>abc[b&63]).join('');
-}
-const inviteUrl = () => location.origin+location.pathname+'#f='+fam;
+const inviteUrl = () => location.origin+location.pathname+'#f='+fam+'&k='+famKey;
+const deviceName = () => isIOS ? 'iPhone' : /android/i.test(navigator.userAgent) ? 'Android' : 'Computador';
 
 async function initStore(){
   if (!configured){ mode='local'; loadLocal(); setMode(); render(); return; }
@@ -364,27 +422,87 @@ async function initStore(){
   catch(e){ console.warn(e); mode='local'; loadLocal(); setMode(); render(); toast('Sem ligação. Abra a app outra vez quando tiver rede.'); return; }
   fbApp = initializeApp(CFG);
   fs = initializeFirestore(fbApp, {localCache: persistentLocalCache({tabManager: persistentMultipleTabManager()})});
-  fam = readFamily();
-  if (!fam){ mode='welcome'; setMode(); render(); return; }
+  auth = getAuth(fbApp);
+  try{
+    const u = await new Promise(res=>{ const off = onAuthStateChanged(auth, x=>{ off(); res(x); }); });
+    uid = u ? u.uid : (await signInAnonymously(auth)).user.uid;
+  }catch(e){
+    console.warn(e);
+    note = e && e.code==='auth/network-request-failed' ? 'offline' : 'auth';
+    mode='welcome'; setMode(); render(); return;
+  }
+  const inv = readFamily();
+  if (!inv.f){ mode='welcome'; setMode(); render(); return; }
+  if (!inv.k){ note='stale'; mode='welcome'; setMode(); render(); return; }
+  enter(inv.f, inv.k);
+}
+/* Entra na família: se este telemóvel ainda não está registado, regista-se com a chave do convite. */
+async function enter(f, k){
+  try{
+    const snap = await getDoc(doc(fs,'families',f)).catch(e=>{ if (e.code==='permission-denied') return null; throw e; });
+    if (!snap) await setDoc(doc(fs,'families',f,'devices',uid), {key:k, t:Date.now(), device:deviceName()});
+  }catch(e){
+    if (e && e.code==='permission-denied'){ forget('invalid'); return false; }
+    console.warn(e); // sem rede: abre com a cópia guardada neste telemóvel
+  }
+  fam=f; famKey=k; ls.set(FKEY,f); ls.set(KKEY,k); note=null;
   startSync();
+  return true;
+}
+function forget(why){
+  unsubs.forEach(u=>u()); unsubs=[];
+  Object.keys(S).forEach(c=>S[c]=new Map());
+  fam=null; famKey=null; ls.del(FKEY); ls.del(KKEY);
+  note=why; mode='welcome'; closeSheet(); setMode(); render();
 }
 function startSync(){
+  unsubs.forEach(u=>u()); unsubs=[];
   mode='live'; setMode(); render();
-  for (const col of ['items','plan','recipes']){
-    onSnapshot(collection(fs,'families',fam,col), snap=>{
+  const denied = err => { console.warn(err); if (err && err.code==='permission-denied' && mode==='live') forget('revoked'); else toast('Sem acesso aos dados da família neste momento.'); };
+  const today = iso(new Date());
+  for (const col of [...COLS,'devices']){
+    let first = true;
+    unsubs.push(onSnapshot(collection(fs,'families',fam,col), snap=>{
       const m = new Map(); snap.docs.forEach(d=>m.set(d.id,d.data())); S[col]=m; render();
-    }, err=>{ console.warn(col,err); toast('Sem acesso aos dados da família. Confirme o convite e as regras do Firestore.'); });
+      // Votos e "quem come" de dias que já passaram deixam de ser precisos.
+      if (first && !snap.metadata?.fromCache && (col==='votes'||col==='eaters')) [...m].filter(([,v])=>v.date && v.date<today).forEach(([id])=>del(col,id));
+      first = false;
+    }, denied));
   }
+  unsubs.push(onSnapshot(doc(fs,'families',fam), d=>{
+    const k = d.exists() && d.data().joinKey;
+    if (k && k!==famKey){ famKey=k; ls.set(KKEY,k); if (sheet && sheet.refresh) sheet.refresh(); }
+  }, denied));
 }
 async function createFamily(){
-  fam = newFamilyId(); ls.set(FKEY, fam);
-  setDoc(doc(fs,'families',fam), {created:Date.now()}).catch(writeErr);
+  if (!uid) return toast('Ainda a ligar ao servidor. Tente daqui a pouco.');
+  const f = randomId(24), k = randomId(32);
+  toast('A criar a família…');
+  try{
+    await setDoc(doc(fs,'families',f), {created:Date.now(), owner:uid, joinKey:k});
+    await setDoc(doc(fs,'families',f,'devices',uid), {key:k, t:Date.now(), device:deviceName()});
+  }catch(e){ writeErr(e); return; }
+  fam=f; famKey=k; ls.set(FKEY,f); ls.set(KKEY,k); note=null;
   startSync(); openFamily();
 }
-function joinFamily(text){
-  const m = String(text).match(/f=([A-Za-z0-9_-]{20,})/) || String(text).trim().match(/^([A-Za-z0-9_-]{20,})$/);
-  if (!m) return toast('Este link não parece um convite da Mesa da Família.');
-  fam = m[1]; ls.set(FKEY, fam); startSync(); toast('Entrou na família. Bem-vindo!');
+async function joinFamily(text){
+  const inv = parseInvite(text);
+  if (!inv) return toast('Este link não parece um convite da Mesa da Família.');
+  if (!inv.k) return toast('Este convite é antigo. Peça o link novo a quem criou a família.');
+  if (!uid) return toast('Ainda a ligar ao servidor. Tente daqui a pouco.');
+  if (await enter(inv.f, inv.k)) toast('Entrou na família. Bem-vindo!');
+}
+/* Troca a chave do convite: os links antigos deixam de servir, quem já entrou continua com acesso. */
+function rotateKey(){
+  const k = randomId(32);
+  return setDoc(doc(fs,'families',fam), {joinKey:k}, {merge:true}).then(()=>{ famKey=k; ls.set(KKEY,k); toast('Convite novo criado. O link antigo deixou de funcionar.'); if (sheet && sheet.refresh) sheet.refresh(); }, writeErr);
+}
+/* Quem é a pessoa deste telemóvel (para votar) */
+function me(){ const d = uid && S.devices.get(uid); const m = (d && d.mid) || ls.get(MEKEY); return m && S.members.has(m) ? m : null; }
+function setMe(mid){
+  ls.set(MEKEY, mid||'');
+  if (mode==='live' && uid && S.devices.has(uid)){ S.devices.set(uid,{...S.devices.get(uid), mid:mid||''}); setDoc(doc(fs,'families',fam,'devices',uid), {mid:mid||''}, {merge:true}).catch(writeErr); }
+  render();
 }
 
 /* ---------- Avisos e instalação ---------- */
@@ -404,28 +522,59 @@ async function enableAlerts(){
     const reg = await navigator.serviceWorker.ready;
     const token = await getToken(getMessaging(fbApp), {vapidKey: window.VAPID_KEY, serviceWorkerRegistration: reg});
     if (!token) throw new Error('sem token');
-    await setDoc(doc(fs,'families',fam,'tokens',token), {token, t:Date.now(), device:(isIOS?'iPhone':/android/i.test(navigator.userAgent)?'Android':'Computador')});
+    await setDoc(doc(fs,'families',fam,'tokens',token), {token, t:Date.now(), device:deviceName()});
     ls.set(AKEY, '1'); toast('Avisos ativados. Recebe uma mensagem por volta das 12h.'); if (sheet && sheet.refresh) sheet.refresh();
   }catch(e){ console.warn(e); toast('Não foi possível ativar os avisos. Confirme a chave VAPID na configuração.'); }
 }
 
 function openFamily(){
+  const st = {edit:null, delM:null, rotate:false};
+  const members = () => [...S.members].sort((a,b)=>(a[1].t||0)-(b[1].t||0));
+  const memberForm = (mid) => { const m = (mid && S.members.get(mid)) || {}; return `
+    <form class="mform" id="memberform" autocomplete="off">
+      <div class="field"><label for="mf-name">Nome</label><input id="mf-name" required maxlength="30" value="${esc(m.name||'')}" placeholder="Ex.: Ana"></div>
+      <div class="field"><label for="mf-avoid">Não come ou tem alergia a</label><input id="mf-avoid" maxlength="200" value="${esc(m.avoid||'')}" placeholder="Ex.: marisco, cogumelos, lactose"></div>
+      <div class="field"><label for="mf-likes">Gosta muito de</label><input id="mf-likes" maxlength="200" value="${esc(m.likes||'')}" placeholder="Ex.: bacalhau, massa, frango"></div>
+      <div class="muted" style="font-size:12px">Separe por vírgulas. Também pode escrever grupos: marisco, peixe, carne, porco, lactose, glúten, ovo, picante, frutos secos.</div>
+      <div class="row"><button class="btn" type="submit">Guardar</button><button class="btn ghost" type="button" data-act="m-cancel">Cancelar</button></div>
+    </form>`; };
   const draw = () => {
     const alerts = ls.get(AKEY)==='1' && 'Notification' in window && Notification.permission==='granted';
+    const ms = members(), mine = me();
+    const devs = [...S.devices].sort((a,b)=>(a[1].t||0)-(b[1].t||0));
     $('#sheet-root').innerHTML = `
     <div class="scrim" data-act="close-bg"><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="fam-t">
       <div class="sheet-head"><div><div class="eyebrow">Definições</div><h2 id="fam-t">A nossa família</h2></div><button class="x" data-act="close" aria-label="Fechar">×</button></div>
+      ${mode==='live' || mode==='local' ? `
+      <section class="steps"><h3>Quem somos</h3>
+        <p class="muted" style="margin:6px 0 4px">Com as pessoas da casa, as sugestões evitam o que alguém não come, as quantidades ajustam-se a quem janta e cada um pode votar.</p>
+        ${ms.map(([id,m])=> st.edit===id ? memberForm(id) : `
+          <div class="member"><div><b>${esc(m.name)}</b>${id===mine?' <span class="pill">este telemóvel</span>':''}
+            ${m.avoid?`<small>Não come: ${esc(m.avoid)}</small>`:''}${m.likes?`<small>Gosta de: ${esc(m.likes)}</small>`:''}</div>
+            ${st.delM===id ? `<button class="btn danger" data-act="m-del-yes" data-id="${esc(id)}">Apagar</button><button class="btn ghost" data-act="m-del-no">Não</button>`
+              : `<button class="link" data-act="m-edit" data-id="${esc(id)}">Editar</button><button class="x" data-act="m-del" data-id="${esc(id)}" aria-label="Apagar ${esc(m.name)}">×</button>`}
+          </div>`).join('')}
+        ${st.edit==='new' ? memberForm(null) : ms.length<12 ? `<button class="btn ghost" style="margin-top:8px" data-act="m-new">+ Adicionar pessoa</button>`:''}
+        ${ms.length ? `<div class="field" style="margin-top:12px"><label for="mf-me">Este telemóvel é de</label><select id="mf-me"><option value="">Escolha…</option>${ms.map(([id,m])=>`<option value="${esc(id)}" ${id===mine?'selected':''}>${esc(m.name)}</option>`).join('')}</select></div>`:''}
+      </section>`:''}
       ${mode==='live' ? `
       <section class="steps"><h3>Convidar a família</h3>
-        <p class="muted" style="margin:6px 0 10px">Envie este link para o grupo da família no WhatsApp. Quem o abrir passa a ver a mesma lista e o mesmo plano.</p>
+        <p class="muted" style="margin:6px 0 10px">Envie este link só para o grupo da família no WhatsApp. Quem o abrir passa a ver a mesma lista e o mesmo plano.</p>
         <div class="confirm" style="word-break:break-all;font-size:13px;user-select:all">${esc(inviteUrl())}</div>
         <div class="row" style="margin-top:10px"><button class="btn" data-act="fam-share">Partilhar convite</button><button class="btn ghost" data-act="fam-copy">Copiar link</button></div>
       </section>
+      <section class="steps"><h3>Telemóveis com acesso</h3>
+        <p class="muted" style="margin:6px 0 4px">Só estes aparelhos conseguem ver e alterar os dados da família.</p>
+        ${devs.map(([id,d])=>`<div class="member"><div><b>${esc(d.device||'Aparelho')}${d.mid && S.members.has(d.mid)?' de '+esc(S.members.get(d.mid).name):''}</b>${id===uid?' <span class="pill">este</span>':''}<small>Entrou a ${d.t?esc(new Date(d.t).toLocaleDateString('pt-PT')):'—'}</small></div>
+          ${id!==uid?`<button class="x" data-act="dev-del" data-id="${esc(id)}" aria-label="Retirar acesso">×</button>`:''}</div>`).join('')}
+        ${st.rotate ? `<div class="confirm" style="margin-top:8px"><span style="flex:1">O link atual deixa de funcionar. Quem já entrou continua com acesso.</span><button class="btn danger" data-act="rot-yes">Criar convite novo</button><button class="btn ghost" data-act="rot-no">Cancelar</button></div>`
+          : `<button class="link" style="margin-top:8px" data-act="rot">O link foi parar a quem não devia? Criar convite novo</button>`}
+      </section>
       <section class="steps"><h3>Aviso das 12h</h3>
-        <p class="muted" style="margin:6px 0 10px">Por volta do meio-dia, este telemóvel recebe um aviso para escolher o jantar, ou com o jantar já escolhido.</p>
+        <p class="muted" style="margin:6px 0 10px">Por volta do meio-dia, este telemóvel recebe um aviso para votar e escolher o jantar, ou com o jantar já escolhido.</p>
         ${alerts ? `<div class="kind">Avisos ativos neste telemóvel.</div>` : `<button class="btn" data-act="fam-alerts">Ativar avisos neste telemóvel</button>`}
         ${isIOS && !standalone ? `<p class="note" style="margin:8px 0 0">No iPhone, os avisos só funcionam depois de instalar a app no ecrã principal (iOS 16.4 ou mais recente).</p>`:''}
-      </section>` : `<p class="muted">Esta cópia funciona só neste dispositivo porque falta a configuração do Firebase.</p>`}
+      </section>` : mode==='local' ? `<p class="muted">Esta cópia funciona só neste dispositivo porque falta a configuração do Firebase.</p>` : ''}
       <section class="steps"><h3>Instalar no telemóvel</h3>
         ${standalone ? `<div class="kind" style="margin-top:6px">A app já está instalada.</div>` : installEvt ? `<button class="btn" style="margin-top:10px" data-act="fam-install">Instalar a app</button>` : `
         <ol><li><b>iPhone (Safari):</b> toque em Partilhar e depois em "Adicionar ao ecrã principal".</li><li><b>Android (Chrome):</b> toque no menu ⋮ e depois em "Instalar app" ou "Adicionar ao ecrã principal".</li></ol>`}
@@ -433,8 +582,20 @@ function openFamily(){
     </div></div>`;
   };
   sheet = {
-    refresh: draw, onChange(){},
-    async onAct(act){
+    refresh: draw,
+    onChange(e){ if (e.target.id==='mf-me') setMe(e.target.value); },
+    onSubmit(e){
+      if (e.target.id!=='memberform') return;
+      const name = $('#mf-name').value.trim().slice(0,30);
+      if (!name) return toast('Escreva o nome.');
+      const id = st.edit==='new' ? 'm-'+randomId(10) : st.edit;
+      const old = S.members.get(id) || {t:Date.now()};
+      put('members', id, {name, avoid:$('#mf-avoid').value.trim().slice(0,200), likes:$('#mf-likes').value.trim().slice(0,200), t:old.t||Date.now()});
+      if (st.edit==='new' && !me()) setMe(id);
+      st.edit=null; draw();
+    },
+    async onAct(act, a){
+      const id = a && a.dataset.id;
       if (act==='fam-alerts') enableAlerts();
       else if (act==='fam-install' && installEvt){ installEvt.prompt(); await installEvt.userChoice.catch(()=>{}); installEvt=null; draw(); }
       else if (act==='fam-share'){
@@ -442,22 +603,41 @@ function openFamily(){
         if (navigator.share) navigator.share(data).catch(()=>{}); else copyInvite();
       }
       else if (act==='fam-copy') copyInvite();
+      else if (act==='m-new'){ st.edit='new'; st.delM=null; draw(); setTimeout(()=>$('#mf-name')&&$('#mf-name').focus(),30); }
+      else if (act==='m-edit'){ st.edit=id; st.delM=null; draw(); }
+      else if (act==='m-cancel'){ st.edit=null; draw(); }
+      else if (act==='m-del'){ st.delM=id; draw(); }
+      else if (act==='m-del-no'){ st.delM=null; draw(); }
+      else if (act==='m-del-yes'){ const n=S.members.get(id); st.delM=null; if (me()===id) setMe(''); del('members', id); toast((n?n.name:'Pessoa')+' saiu da família'); }
+      else if (act==='dev-del'){ del('devices', id); toast('Esse aparelho deixou de ter acesso. Crie um convite novo se ele ainda tiver o link.'); }
+      else if (act==='rot'){ st.rotate=true; draw(); }
+      else if (act==='rot-no'){ st.rotate=false; draw(); }
+      else if (act==='rot-yes'){ st.rotate=false; rotateKey(); }
     }
   };
   draw();
 }
 function copyInvite(){ navigator.clipboard.writeText(inviteUrl()).then(()=>toast('Link copiado'), ()=>toast('Selecione o link e copie-o.')); }
 
+const NOTES = {
+  auth:'Falta ligar o acesso anónimo no Firebase (Authentication, Sign-in method, Anonymous). Sem isso a app não consegue proteger os dados da família.',
+  offline:'Sem ligação à internet. Abra a app outra vez quando tiver rede.',
+  stale:'A app tem agora uma proteção nova e a família antiga deixou de servir. Crie a família outra vez e envie o novo convite ao grupo.',
+  invalid:'Este convite já não é válido. Peça um link novo a alguém da família.',
+  revoked:'Este telemóvel deixou de ter acesso à família. Peça um convite novo a alguém da família.'
+};
 function renderWelcome(){
+  const blocked = note==='auth' || note==='offline';
   return `
   <div><div class="eyebrow">Bem-vindos</div><h2>Mesa da Família</h2><p class="muted" style="margin:6px 0 0">Receitas para o almoço e jantar, plano da semana e lista de compras partilhada por toda a família.</p></div>
+  ${note ? `<div class="confirm note" role="alert">${esc(NOTES[note]||'')}</div>`:''}
   <section class="today" style="flex-direction:column;align-items:stretch;gap:10px"><h3>Já há uma família criada?</h3>
     <p class="muted" style="margin:0">Peça o link de convite a quem criou e abra-o neste telemóvel. Também o pode colar aqui.</p>
-    <form class="addbar" id="joinform" autocomplete="off"><input id="joinlink" placeholder="Cole aqui o link de convite" aria-label="Link de convite"><button class="btn" type="submit">Entrar</button></form>
+    <form class="addbar" id="joinform" autocomplete="off"><input id="joinlink" maxlength="400" placeholder="Cole aqui o link de convite" aria-label="Link de convite"><button class="btn" type="submit" ${blocked?'disabled':''}>Entrar</button></form>
   </section>
   <section class="today" style="flex-direction:column;align-items:stretch;gap:10px"><h3>É a primeira pessoa da família?</h3>
     <p class="muted" style="margin:0">Crie a família e depois envie o convite para o grupo do WhatsApp.</p>
-    <button class="btn" data-act="create-family">Criar a família</button>
+    <button class="btn" data-act="create-family" ${blocked?'disabled':''}>Criar a família</button>
   </section>`;
 }
 
@@ -488,6 +668,90 @@ function allRecipes(){
 function recipeById(id){ return allRecipes().find(r=>r.id===id); }
 function parseIng(s){ const [n,q] = s.split('|'); const [e,c] = lookup(n); return {n:n.trim(),q:(q||'').trim(),e,c,key:slug(n)}; }
 
+/* ---------- Pessoas: quem come, o que evitam e de que gostam ---------- */
+const GROUPS = {
+  marisco:['camarao','ameijoas','mexilhao','polvo','lulas','marisco','sapateira','gambas'],
+  peixe:['#peixe'], carne:['#carne'],
+  porco:['porco','entrecosto','febras','lombo','chourico','bacon','fiambre','linguica','salsichas','rojoes','farinheira','morcela','toucinho','presunto'],
+  lactose:['leite','queijo','natas','manteiga','iogurte','mozarela','parmesao','feta','bechamel','queijo ralado'],
+  gluten:['massa','esparguete','pao','farinha','tortilhas','cuscuz','lasanha','pizza','bolachas','cerveja','pao ralado','massa quebrada','folhas de lasanha'],
+  ovo:['ovos','ovo','omelete','maionese'], picante:['piri-piri','caril','malagueta','picante'],
+  'frutos secos':['noz','nozes','amendoa','amendoim','caju','pinhoes','avela','sesamo']
+};
+GROUPS.leite = GROUPS.lactose; GROUPS.ovos = GROUPS.ovo; GROUPS.mariscos = GROUPS.marisco;
+const wordsOf = s => norm(s||'').split(/[,;\n]+|\s+e\s+/).map(w=>w.trim()).filter(w=>w.length>=3);
+function variants(w){
+  if (GROUPS[w]) return GROUPS[w];
+  const v = new Set([w]);
+  if (w.endsWith('oes')) v.add(w.slice(0,-3)+'ao');
+  if (w.endsWith('es')) v.add(w.slice(0,-2));
+  if (w.endsWith('s')) v.add(w.slice(0,-1));
+  return [...v];
+}
+const reOf = x => new RegExp('(^|[^a-z])'+x.replace(/[-.*+?^${}()|[\]\\]/g,'\\$&')+'(s|es)?([^a-z]|$)');
+const recipeText = r => norm(r.t+' | '+(r.ing||[]).map(s=>s.split('|')[0]).join(' | ')).replace(/leite de coco/g,'coco');
+function matches(r, text){
+  const t = recipeText(r);
+  return wordsOf(text).filter(w=>variants(w).some(x=> x.startsWith('#') ? (r.tags||[]).includes(x.slice(1)) : reOf(x).test(t)));
+}
+const memberIds = () => [...S.members].sort((a,b)=>(a[1].t||0)-(b[1].t||0)).map(([id])=>id);
+function eatersFor(pid){
+  const all = memberIds(); const e = S.eaters.get(pid);
+  if (!e || !Array.isArray(e.mids)) return all;
+  return e.mids.filter(m=>S.members.has(m));
+}
+function peopleFor(pid){
+  if (S.members.size) return eatersFor(pid).length;
+  const e = S.eaters.get(pid); return e && e.n ? e.n : 4;
+}
+function setEaters(pid, mids, n){
+  const [date, slot] = pid.split('_');
+  put('eaters', pid, S.members.size ? {date, slot, mids} : {date, slot, n});
+}
+/* Quem, entre os que comem, não come esta receita, e porquê */
+function conflicts(r, mids){
+  return mids.map(id=>{ const m=S.members.get(id); const w = m ? matches(r, m.avoid) : []; return w.length ? {name:m.name, words:w} : null; }).filter(Boolean);
+}
+const likeScore = (r, mids) => mids.reduce((n,id)=>{ const m=S.members.get(id); return n + (m && matches(r, m.likes).length ? 1 : 0); }, 0);
+const conflictText = cs => cs.map(c=>`${c.name} não come ${c.words.join(', ')}`).join('. ');
+const nameList = ids => ids.map(id=>S.members.get(id)?.name).filter(Boolean).join(', ');
+
+/* Ajusta as quantidades da receita (feita para 4 pessoas) ao número de doses */
+const fmtNum = x => String(Math.round(x*100)/100).replace('.',',');
+function scaleQty(q, f){
+  if (!q || Math.abs(f-1)<0.01 || /q\.?\s*b/i.test(q)) return q;
+  return q.replace(/\([^)]*\)|(\d+(?:[.,]\d+)?)(?:\/(\d+))?(\s*)([A-Za-zçãé.]*)/g, (m, num, den, sp, unit)=>{
+    if (!num) return m;
+    const base = parseFloat(num.replace(',','.')) / (den ? parseFloat(den) : 1);
+    let v = base*f; const u = unit.toLowerCase();
+    if (u==='g' || u==='gr' || u==='ml'){
+      v = v>=100 ? Math.round(v/50)*50 : Math.max(5, Math.round(v/5)*5);
+      if (v>=1000) return fmtNum(v/1000)+sp+(u==='ml'?'l':'kg');
+      return fmtNum(v)+sp+unit;
+    }
+    if (u==='kg' || u==='l') return fmtNum(Math.max(0.25, Math.round(v*4)/4))+sp+unit;
+    v = base<1 ? Math.max(0.5, Math.round(v*2)/2) : Math.max(1, Math.round(v));
+    return fmtNum(v)+sp+unit;
+  });
+}
+/* Votos: um por pessoa e por refeição, em votes/<dia>_<refeição>_<pessoa> */
+function votesFor(pid){
+  const [date, slot] = pid.split('_'); const by = new Map();
+  for (const v of S.votes.values()){
+    if (v.date!==date || v.slot!==slot || !S.members.has(v.mid) || !recipeById(v.recipeId)) continue;
+    if (!by.has(v.recipeId)) by.set(v.recipeId, []);
+    by.get(v.recipeId).push(v.mid);
+  }
+  return [...by].map(([id,mids])=>({r:recipeById(id), mids})).sort((a,b)=>b.mids.length-a.mids.length || a.r.t.localeCompare(b.r.t,'pt'));
+}
+function vote(pid, rid){
+  const mid = me(); if (!mid) return false;
+  const [date, slot] = pid.split('_'); const id = pid+'_'+mid; const cur = S.votes.get(id);
+  if (cur && cur.recipeId===rid){ del('votes', id); toast('Voto retirado'); }
+  else { put('votes', id, {date, slot, mid, recipeId:rid, t:Date.now()}); toast('Voto registado'); }
+  return true;
+}
+
 /* ---------- Ações ---------- */
 function addItem(name, qty, meal){
   if (readOnly) return toast('Não tem permissão para alterar a lista.');
@@ -504,15 +768,17 @@ function addItem(name, qty, meal){
   }
   return key;
 }
-function choose(r, date, slot, keys){
+function choose(r, date, slot, keys, o={}){
   if (readOnly) return toast('Não tem permissão para alterar o plano.');
   const pid = date+'_'+slot;
   const old = S.plan.get(pid);
-  if (old && old.recipeId!==r.id) unplan(pid, true);
+  if (old) unplan(pid, true);
+  const people = o.people ?? peopleFor(pid), double = !!o.double;
+  const f = (people||4)/4*(double?2:1);
   const ings = r.ing.map(parseIng).filter(i=>keys.includes(i.key));
-  ings.forEach(i=>addItem(i.n, i.q==='q.b.'?'':i.q, r.t));
-  put('plan',pid,{date,slot,recipeId:r.id,title:r.t,keys:ings.map(i=>i.key),t:Date.now()});
-  toast(ings.length ? `${r.t}: ${ings.length} ingrediente${ings.length>1?'s':''} na lista` : `${r.t} está no plano`);
+  ings.forEach(i=>addItem(i.n, i.q==='q.b.'?'':scaleQty(i.q,f), r.t));
+  put('plan',pid,{date,slot,recipeId:r.id,title:r.t,keys:ings.map(i=>i.key),people,double,t:Date.now()});
+  if (!o.silent) toast(ings.length ? `${r.t}: ${ings.length} ingrediente${ings.length>1?'s':''} na lista` : `${r.t} está no plano`);
 }
 function unplan(pid, silent){
   const p = S.plan.get(pid); if (!p) return;
@@ -531,7 +797,7 @@ function unplan(pid, silent){
 let tab = 'sugestoes';
 try{ tab = localStorage.getItem('mesa-tab') || 'sugestoes'; }catch(e){}
 const ds0 = days();
-const ui = { date: iso(ds0[0]), slot: new Date().getHours()<15 ? 'almoco':'jantar', filter:'todos', seed: Math.random(), more:false };
+const ui = { healthy: ls.get('mesa-saudavel')==='1', date: iso(ds0[0]), slot: new Date().getHours()<15 ? 'almoco':'jantar', filter:'todos', shuffle:0, more:false, planAsk:false };
 
 function rand(seed){ let x = Math.sin(seed)*10000; return x-Math.floor(x); }
 function easter(y){ const a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451),n=h+l-7*m+114; return new Date(y,Math.floor(n/31)-1,(n%31)+1,12); }
@@ -545,22 +811,70 @@ function dayKind(s){
 }
 const slotsFor = s => dayKind(s).relaxed ? ['almoco','jantar'] : ['jantar'];
 const effort = r => r.min ? (r.min<=35?'Rápida':r.min>=60?'Elaborada':'') : '';
-function suggestions(){
-  const recent = new Set([...S.plan.values()].map(p=>p.recipeId));
-  const relaxed = dayKind(ui.date).relaxed;
-  let pool = allRecipes().filter(r=>(r.m||[]).includes(ui.slot));
-  if (ui.filter!=='todos') pool = pool.filter(r=>(r.tags||[]).includes(ui.filter));
+/* Receitas escolhidas a menos de 7 dias (antes ou depois) do dia indicado, sem contar a própria refeição. */
+function usedNear(date, slot){
+  const t = new Date(date+'T12:00').getTime(), m = new Map();
+  for (const p of S.plan.values()){
+    if (p.date===date && p.slot===slot) continue;
+    const d = Math.round(Math.abs(new Date(p.date+'T12:00').getTime()-t)/864e5);
+    if (d<7) m.set(p.recipeId, p);
+  }
+  return m;
+}
+const hashStr = s => { let h = 7; for (const c of s) h = (h*31 + c.charCodeAt(0)) % 1000003; return h; };
+/* Sugestões para uma refeição. A ordem depende só do dia e da refeição, para todos verem as mesmas e poderem votar. */
+function suggest(date, slot, o={}){
+  const used = usedNear(date, slot);
+  const relaxed = dayKind(date).relaxed;
+  const mids = eatersFor(date+'_'+slot);
+  const filter = o.filter || ui.filter;
+  let pool = allRecipes().filter(r=>(r.m||[]).includes(slot));
+  if (filter!=='todos') pool = pool.filter(r=>(r.tags||[]).includes(filter));
+  if (ui.healthy) pool = pool.filter(r=>(r.tags||[]).includes('saudavel'));
+  const repeated = pool.filter(r=>used.has(r.id)).length;
+  pool = pool.filter(r=>!used.has(r.id));
+  const ok = pool.filter(r=>!conflicts(r, mids).length);
+  const avoided = pool.length - ok.length;
+  const seed = hashStr(date+slot) + (o.shuffle ?? ui.shuffle)*7919;
   const fit = r => { const m = r.min || ((r.tags||[]).includes('rapido') ? 25 : 45); return relaxed ? (m>=45?0:1.2) : (m<=35?0:1.2); };
-  return pool.map((r,i)=>({r,s:rand(ui.seed*1000+i*7.3+r.id.length)+fit(r)+(recent.has(r.id)?2:0)})).sort((a,b)=>a.s-b.s).map(x=>x.r);
+  const list = ok.map(r=>({r,s:rand(seed+hashStr(r.id))+fit(r)-0.6*likeScore(r,mids)+(o.penalty?o.penalty(r):0)})).sort((a,b)=>a.s-b.s).map(x=>x.r);
+  return {list, repeated, avoided, mids};
+}
+const mainTag = r => r ? ['peixe','carne','vegetariano'].find(t=>(r.tags||[]).includes(t)) || 'outro' : null;
+/* Preenche as refeições vazias dos próximos 7 dias, variando entre carne, peixe e vegetariano */
+function planWeek(){
+  let n = 0, last = null;
+  const mainIng = r => r ? slug((r.ing.find(s=>lookup(s.split('|')[0])[1]==='talho')||r.ing[0]).split('|')[0]).split('-')[0] : null;
+  const usedIng = new Set([...S.plan.values()].map(p=>mainIng(recipeById(p.recipeId))));
+  for (const d of days()){
+    const v = iso(d);
+    for (const slot of slotsFor(v)){
+      const pid = v+'_'+slot;
+      if (S.plan.has(pid)){ last = mainTag(recipeById(S.plan.get(pid).recipeId)); continue; }
+      const voted = votesFor(pid)[0];
+      const r = voted ? voted.r : suggest(v, slot, {filter:'todos', shuffle:0, penalty: x => (mainTag(x)===last ? 0.9 : 0) + (usedIng.has(mainIng(x)) ? 0.7 : 0)}).list[0];
+      if (!r) continue;
+      usedIng.add(mainIng(r));
+      choose(r, v, slot, r.ing.map(parseIng).filter(i=>i.c!=='desp').map(i=>i.key), {silent:true});
+      last = mainTag(r); n++;
+    }
+  }
+  toast(n ? `${n} refeiç${n>1?'ões planeadas':'ão planeada'}. Os ingredientes estão na lista.` : 'A semana já está toda planeada.');
 }
 
 function renderSugestoes(){
   const ds = days();
   if (!slotsFor(ui.date).includes(ui.slot)) ui.slot = 'jantar';
-  const planned = S.plan.get(ui.date+'_'+ui.slot);
-  const list = suggestions();
+  const pid = ui.date+'_'+ui.slot;
+  const planned = S.plan.get(pid);
+  const {list, repeated, avoided, mids} = suggest(ui.date, ui.slot);
+  ui.hidden = repeated;
   const shown = ui.more ? list : list.slice(0,4);
   const cnt = r => r.ing.length;
+  const votes = votesFor(pid);
+  const votesOf = id => (votes.find(v=>v.r.id===id)||{mids:[]}).mids.length;
+  const ref = ui.slot==='almoco'?'almoço':'jantar';
+  const allM = memberIds();
   return `
   <div class="row" style="justify-content:space-between;align-items:flex-end">
     <div><div class="eyebrow">O que vamos comer</div><h2>${esc(dayLabelIso(ui.date))} ao ${ui.slot==='almoco'?'almoço':'jantar'}</h2></div>
@@ -576,16 +890,28 @@ function renderSugestoes(){
   <div class="catpick" role="group" aria-label="Tipo de prato">
     ${CHOICE.map(([k,e,v])=>`<button data-act="filter" data-v="${k}" aria-pressed="${ui.filter===k}"><span aria-hidden="true">${e}</span>${v}</button>`).join('')}
   </div>
+  ${allM.length ? `<div><div class="eyebrow" style="margin-bottom:6px">Quem vem ao ${ref}</div><div class="people" role="group" aria-label="Quem vem ao ${ref}">
+      ${allM.map(id=>`<button class="chip" data-act="eat" data-pid="${pid}" data-id="${esc(id)}" aria-pressed="${mids.includes(id)}">${esc(S.members.get(id).name)}</button>`).join('')}
+      <span class="muted" style="font-size:13px">${mids.length} ${mids.length===1?'pessoa':'pessoas'}</span></div></div>`
+    : mode!=='welcome' ? `<button class="today" data-act="family" style="text-align:left;width:100%"><span class="em" aria-hidden="true">👨‍👩‍👧‍👦</span><div><b>Diga quem são as 4 pessoas da casa</b><div class="meta">Para votar no jantar, evitar o que alguém não come e ajustar as quantidades.</div></div></button>` : ''}
+  ${votes.length ? `<section class="steps"><div class="row" style="justify-content:space-between"><h3>🗳️ Votos para o ${ref}</h3>${!planned||planned.recipeId!==votes[0].r.id?`<button class="link" data-act="open" data-id="${esc(votes[0].r.id)}">Escolher o mais votado</button>`:''}</div>
+      <div class="votes" style="margin-top:8px">${votes.map(v=>`<button class="vote-row" data-act="open" data-id="${esc(v.r.id)}"><span>${esc(v.r.t)}<small>${esc(nameList(v.mids))}</small></span><b class="n">${v.mids.length}</b></button>`).join('')}</div>
+      ${allM.length>votes.reduce((n,v)=>n+v.mids.length,0) ? `<div class="muted" style="font-size:13px;margin-top:8px">Ainda faltam votar: ${esc(nameList(allM.filter(m=>!votes.some(v=>v.mids.includes(m)))))}.</div>`:''}
+    </section>` : allM.length>1 && !planned ? `<div class="muted" style="font-size:13px">Abra uma receita e toque em 👍 Votar. Depois escolhe-se a mais votada.</div>` : ''}
+  <button class="healthy" data-act="healthy" aria-pressed="${ui.healthy}"><span class="sw" aria-hidden="true"></span><span>🥗 Só refeições saudáveis</span><small>Mais legumes, peixe e carnes magras</small></button>
+  ${ui.hidden ? `<div class="muted" style="font-size:13px">${ui.hidden===1?'1 receita escolhida':ui.hidden+' receitas escolhidas'} nesta semana não ${ui.hidden===1?'aparece':'aparecem'}, para não repetir.</div>`:''}
+  ${avoided ? `<div class="muted" style="font-size:13px">${avoided===1?'1 receita escondida':avoided+' receitas escondidas'} porque alguém à mesa não come um dos ingredientes.</div>`:''}
   ${shown.length ? `<div class="cards">${shown.map(r=>`
     <button class="card" data-act="open" data-id="${esc(r.id)}">
       <span class="em" aria-hidden="true">${esc(r.custom?(r.emoji||'🍽️'):MAIN_EMOJI(r))}</span>
       <div><h3>${esc(r.t)}</h3>
         <div class="meta">${r.min?esc(r.min>=120?(r.min/60).toString().replace('.',',')+' h':r.min+' min')+' · ':''}${cnt(r)} ingredientes${r.custom?' · da família':''}</div>
-        <div style="margin-top:6px">${effort(r)?`<span class="tag ${effort(r)==='Elaborada'?'hot':''}">${effort(r)}</span>`:''}${(r.tags||[]).filter(t=>t!=='rapido').map(t=>`<span class="tag">${esc(TAGS[t]||t)}</span>`).join('')}</div>
+        <div style="margin-top:6px">${votesOf(r.id)?`<span class="tag vote">👍 ${votesOf(r.id)}</span>`:''}${effort(r)?`<span class="tag ${effort(r)==='Elaborada'?'hot':''}">${effort(r)}</span>`:''}${(r.tags||[]).filter(t=>t!=='rapido').map(t=>`<span class="tag${t==='saudavel'?' ok':''}">${esc(TAGS[t]||t)}</span>`).join('')}</div>
       </div>
-    </button>`).join('')}</div>` : `<div class="empty"><b>Sem receitas para este filtro</b>Escolha outro filtro ou adicione uma receita da família.</div>`}
+    </button>`).join('')}</div>` : `<div class="empty"><b>Sem receitas para este filtro</b>${ui.hidden?'As que servem já foram escolhidas nesta semana. ':''}Escolha outro filtro ou adicione uma receita da família.</div>`}
   <div class="row">
     <button class="btn ghost" data-act="shuffle">Outras sugestões</button>
+    ${ui.shuffle?`<button class="link" data-act="unshuffle" title="As mesmas sugestões que o resto da família vê">Voltar às da família</button>`:''}
     ${list.length>4 ? `<button class="link" data-act="more">${ui.more?'Mostrar menos':'Ver todas ('+list.length+')'}</button>`:''}
     <span style="flex:1"></span>
     <button class="link" data-act="new-recipe">+ Receita da família</button>
@@ -594,13 +920,17 @@ function renderSugestoes(){
 
 function renderPlano(){
   const ds = days();
+  const empty = ds.reduce((n,d)=>n+slotsFor(iso(d)).filter(k=>!S.plan.has(iso(d)+'_'+k)).length,0);
+  const prevDinner = d => { const y=new Date(d); y.setDate(d.getDate()-1); const p=S.plan.get(iso(y)+'_jantar'); return p && p.double ? p : null; };
   return `
   <div><div class="eyebrow">Próximos 7 dias</div><h2>Plano de refeições</h2></div>
-  <div class="days">${ds.map((d,i)=>{ const v=iso(d); return `
+  ${empty ? (ui.planAsk ? `<div class="confirm"><span style="flex:1">Preencher ${empty===1?'a refeição vazia':'as '+empty+' refeições vazias'} com pratos variados, sem repetir${S.members.size?' e sem o que alguém não come':''}, e juntar os ingredientes à lista?</span><button class="btn" data-act="plan-yes">Planear</button><button class="btn ghost" data-act="plan-no">Cancelar</button></div>`
+    : `<button class="btn" data-act="plan-ask">✨ Planear a semana com um toque</button>`) : ''}
+  <div class="days">${ds.map((d,i)=>{ const v=iso(d); const mm=prevDinner(d); return `
     <div class="day"><div class="d">${dayLabel(d,i)}<small>${d.getDate()} ${MON[d.getMonth()]}</small></div>
-      <div class="slots">${Object.entries(SLOTS).filter(([k])=>slotsFor(v).includes(k)).map(([k,lbl])=>{ const p=S.plan.get(v+'_'+k); return `
+      <div class="slots">${mm && !S.plan.has(v+'_almoco') ? `<div class="slot"><span class="lbl">Almoço</span><span class="val marmita">🍱 Marmita: ${esc(mm.title)}</span></div>`:''}${Object.entries(SLOTS).filter(([k])=>slotsFor(v).includes(k)).map(([k,lbl])=>{ const p=S.plan.get(v+'_'+k); return `
         <div class="slot"><span class="lbl">${lbl}</span>
-          ${p ? `<button class="val" data-act="open" data-id="${esc(p.recipeId)}" data-date="${v}" data-slot="${k}">${esc(p.title)}</button><button class="x" data-act="unplan" data-v="${v}_${k}" aria-label="Retirar ${esc(p.title)} do plano">×</button>`
+          ${p ? `<button class="val" data-act="open" data-id="${esc(p.recipeId)}" data-date="${v}" data-slot="${k}">${esc(p.title)}${p.people||p.double?` <small>· ${p.people?p.people+' p.':''}${p.double?' 🍱 a dobrar':''}</small>`:''}</button><button class="x" data-act="unplan" data-v="${v}_${k}" aria-label="Retirar ${esc(p.title)} do plano">×</button>`
               : `<button class="val empty" data-act="pick" data-date="${v}" data-slot="${k}">+ Escolher</button>`}
         </div>`;}).join('')}</div>
     </div>`;}).join('')}</div>
@@ -623,7 +953,7 @@ function renderLista(){
     <div><div class="eyebrow">Lista de compras</div><h2><span class="counts">${items.length}</span> ${items.length===1?'artigo':'artigos'} por comprar</h2></div>
   </div>
   <form class="addbar" id="addform" autocomplete="off">
-    <input id="addname" list="ing-list" placeholder="Adicionar artigo (ex.: Leite)" aria-label="Nome do artigo">
+    <input id="addname" list="ing-list" maxlength="60" placeholder="Adicionar artigo (ex.: Leite)" aria-label="Nome do artigo">
     <button class="btn" type="submit">Adicionar</button>
   </form>
   <datalist id="ing-list">${Object.keys(ING_RAW).map(k=>`<option value="${esc(k.charAt(0).toUpperCase()+k.slice(1))}">`).join('')}</datalist>
@@ -642,7 +972,16 @@ function render(){
   document.querySelectorAll('nav.tabs button').forEach(b=>b.setAttribute('aria-current', b.dataset.tab===tab?'page':'false'));
   const n = [...S.items.values()].filter(i=>!i.bought).length;
   const b = $('#badge'); b.hidden = !n; b.textContent = n;
-  if (sheet && sheet.refresh) sheet.refresh();
+  if (sheet && sheet.refresh) keepInputs(sheet.refresh);
+}
+/* Quando chegam alterações de outro telemóvel, a folha aberta é redesenhada sem perder o que se está a escrever. */
+function keepInputs(fn){
+  const root = $('#sheet-root');
+  const vals = [...root.querySelectorAll('input[id]:not([type=checkbox]),textarea[id]')].map(el=>[el.id, el.value]);
+  const act = document.activeElement && root.contains(document.activeElement) ? document.activeElement.id : null;
+  fn();
+  vals.forEach(([id,v])=>{ const el = document.getElementById(id); if (el) el.value = v; });
+  if (act && document.getElementById(act)) document.getElementById(act).focus();
 }
 
 /* ---------- Folha de receita ---------- */
@@ -652,43 +991,67 @@ function openRecipe(id, date, slot){
   const r = recipeById(id); if (!r) return toast('Esta receita já não existe.');
   const ings = r.ing.map(parseIng);
   const sel = new Set(ings.filter(i=>i.c!=='desp').map(i=>i.key));
-  const st = {date:date||ui.date, slot:slot||ui.slot, confirmDel:false};
+  const st = {date:date||ui.date, slot:slot||ui.slot, confirmDel:false, double:null};
   if (!slotsFor(st.date).includes(st.slot)) st.slot = 'jantar';
   const ds = days();
   const draw = () => {
     const pid = st.date+'_'+st.slot; const cur = S.plan.get(pid);
+    if (st.double===null) st.double = !!(cur && cur.recipeId===r.id && cur.double);
     const inList = k => { const it=S.items.get(k); return it && !it.bought; };
+    const allM = memberIds(), mids = eatersFor(pid), people = peopleFor(pid), mine = me();
+    const f = (people||4)/4*(st.double?2:1);
+    const cs = conflicts(r, mids);
+    const myVote = mine && S.votes.get(pid+'_'+mine);
+    const voters = (votesFor(pid).find(v=>v.r.id===r.id)||{mids:[]}).mids;
     $('#sheet-root').innerHTML = `
     <div class="scrim" data-act="close-bg"><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sh-t">
       <div class="sheet-head"><div>
         <div class="eyebrow">${(r.m||[]).map(m=>SLOTS[m]).join(' · ')}${r.custom?' · Receita da família':''}</div>
         <h2 id="sh-t">${esc(r.t)}</h2></div>
         <button class="x" data-act="close" aria-label="Fechar">×</button></div>
-      <div class="facts">${r.min?`<span>Tempo <b>${r.min>=120?(r.min/60).toString().replace('.',',')+' h':r.min+' min'}</b></span>`:''}<span>Doses <b>4 pessoas</b></span>${effort(r)?`<span>Tipo <b>${effort(r)}</b></span>`:''}<span><b>${ings.length}</b> ingredientes</span></div>
+      <div class="facts">${r.min?`<span>Tempo <b>${r.min>=120?(r.min/60).toString().replace('.',',')+' h':r.min+' min'}</b></span>`:''}<span>Doses <b>${people} ${people===1?'pessoa':'pessoas'}${st.double?' + marmita':''}</b></span>${effort(r)?`<span>Tipo <b>${effort(r)}</b></span>`:''}<span><b>${ings.length}</b> ingredientes</span></div>
       <div class="when">
         <div><label for="sh-date">Dia</label><select id="sh-date">${ds.map((d,i)=>`<option value="${iso(d)}" ${iso(d)===st.date?'selected':''}>${dayLabel(d,i)}</option>`).join('')}</select></div>
         <div><label for="sh-slot">Refeição</label><select id="sh-slot">${Object.entries(SLOTS).filter(([k])=>slotsFor(st.date).includes(k)).map(([k,v])=>`<option value="${k}" ${k===st.slot?'selected':''}>${v}</option>`).join('')}</select></div>
       </div>
+      <div><div class="eyebrow" style="margin-bottom:6px">Quem come</div>
+        ${allM.length ? `<div class="people" role="group" aria-label="Quem come">${allM.map(m=>`<button class="chip" data-act="eat" data-pid="${pid}" data-id="${esc(m)}" aria-pressed="${mids.includes(m)}">${esc(S.members.get(m).name)}</button>`).join('')}</div>`
+          : `<div class="row"><div class="stepper" role="group" aria-label="Número de pessoas"><button data-act="ppl" data-v="-1" aria-label="Menos uma pessoa">−</button><b>${people}</b><button data-act="ppl" data-v="1" aria-label="Mais uma pessoa">+</button></div><span class="muted" style="font-size:13px">pessoas</span></div>`}
+      </div>
+      <label class="check"><input type="checkbox" id="sh-double" ${st.double?'checked':''}><span>🍱 Fazer a dobrar<small>Sobra para a marmita do almoço de amanhã. As quantidades duplicam.</small></span></label>
+      ${cs.length ? `<div class="note">Atenção: ${esc(conflictText(cs))}.</div>`:''}
       ${cur && cur.recipeId!==r.id ? `<div class="note">Vai substituir ${esc(cur.title)} neste dia.</div>`:''}
-      ${cur && cur.recipeId===r.id ? `<div class="note" style="color:var(--basil)">Já está no plano para este dia. Pode voltar a adicionar ingredientes.</div>`:''}
-      <div><h3 style="margin-bottom:4px">Ingredientes</h3><div class="muted" style="font-size:13px;margin-bottom:8px">Desmarque o que já tem em casa. Só os marcados vão para a lista.</div>
-      <div class="ings">${ings.map(i=>`<label class="ing${sel.has(i.key)?'':' off'}"><span class="em" aria-hidden="true">${esc(i.e)}</span><span><span class="n">${esc(i.n)}</span>${i.q?`<small>${esc(i.q)}</small>`:''}</span>${inList(i.key)?'<span class="pill">na lista</span>':''}<input type="checkbox" data-k="${esc(i.key)}" ${sel.has(i.key)?'checked':''} aria-label="${esc(i.n)}"></label>`).join('')}</div></div>
+      ${(()=>{ const u = usedNear(st.date, st.slot).get(r.id); return u ? `<div class="note">Este prato já está escolhido para ${esc(dayLabelIso(u.date).toLowerCase())} ao ${u.slot==='almoco'?'almoço':'jantar'}. Assim repete-se na mesma semana.</div>` : ''; })()}
+      ${cur && cur.recipeId===r.id ? `<div class="note" style="color:var(--basil)">Já está no plano para este dia. Se mudar as pessoas ou a marmita, toque em Escolher para atualizar a lista.</div>`:''}
+      ${allM.length ? `<div class="row">
+        ${mine ? `<button class="btn ghost" data-act="vote" aria-pressed="${!!(myVote && myVote.recipeId===r.id)}">${myVote && myVote.recipeId===r.id ? '👍 Votou neste (retirar)' : '👍 Votar neste'}</button>`
+          : `<label for="sh-me" class="muted" style="font-size:13px">Para votar, diga quem é:</label><select id="sh-me" style="width:auto"><option value="">Escolha…</option>${allM.map(m=>`<option value="${esc(m)}">${esc(S.members.get(m).name)}</option>`).join('')}</select>`}
+        ${voters.length ? `<span class="muted" style="font-size:13px">Votos: ${esc(nameList(voters))}</span>`:''}
+      </div>`:''}
+      <div><h3 style="margin-bottom:4px">Ingredientes${Math.abs(f-1)>0.01?` <span class="muted" style="font-weight:500;font-size:13px">· quantidades para ${people}${st.double?' a dobrar':''}</span>`:''}</h3><div class="muted" style="font-size:13px;margin-bottom:8px">Desmarque o que já tem em casa. Só os marcados vão para a lista.</div>
+      <div class="ings">${ings.map(i=>{ const q = scaleQty(i.q, f); return `<label class="ing${sel.has(i.key)?'':' off'}"><span class="em" aria-hidden="true">${esc(i.e)}</span><span><span class="n">${esc(i.n)}</span>${q?`<small>${esc(q)}</small>`:''}</span>${inList(i.key)?'<span class="pill">na lista</span>':''}<input type="checkbox" data-k="${esc(i.key)}" ${sel.has(i.key)?'checked':''} aria-label="${esc(i.n)}"></label>`; }).join('')}</div></div>
       <section class="steps"><h3>Receita</h3>
         ${(r.st||[]).length ? `<ol>${r.st.map(s=>`<li>${esc(s)}</li>`).join('')}</ol>` : `<p class="muted" style="margin:8px 0 0">Esta receita ainda não tem passos de preparação.</p>`}
       </section>
       ${r.custom ? (st.confirmDel ? `<div class="confirm"><span style="flex:1">Apagar esta receita para toda a família?</span><button class="btn danger" data-act="del-recipe-yes">Apagar</button><button class="btn ghost" data-act="del-recipe-no">Cancelar</button></div>` : `<button class="link" style="color:var(--tomato);align-self:flex-start" data-act="del-recipe">Apagar receita</button>`) : ''}
-      <div class="sticky-act"><button class="btn" data-act="choose" ${readOnly?'disabled':''}>Escolher e adicionar ${sel.size} à lista</button></div>
+      <div class="sticky-act"><button class="btn" data-act="choose" ${readOnly||!people?'disabled':''}>${people ? `Escolher e adicionar ${sel.size} à lista` : 'Escolha quem come'}</button></div>
     </div></div>`;
   };
   sheet = {
     refresh: draw,
     onChange(e){
-      if (e.target.id==='sh-date'){ st.date=e.target.value; if (!slotsFor(st.date).includes(st.slot)) st.slot='jantar'; draw(); }
-      else if (e.target.id==='sh-slot'){ st.slot=e.target.value; draw(); }
+      if (e.target.id==='sh-date'){ st.date=e.target.value; st.double=null; if (!slotsFor(st.date).includes(st.slot)) st.slot='jantar'; draw(); }
+      else if (e.target.id==='sh-slot'){ st.slot=e.target.value; st.double=null; draw(); }
+      else if (e.target.id==='sh-double'){ st.double=e.target.checked; draw(); }
+      else if (e.target.id==='sh-me'){ if (e.target.value) setMe(e.target.value); }
       else if (e.target.dataset.k){ e.target.checked ? sel.add(e.target.dataset.k) : sel.delete(e.target.dataset.k); draw(); const el=document.querySelector(`#sheet-root input[data-k="${CSS.escape(e.target.dataset.k)}"]`); el&&el.focus(); }
     },
-    onAct(act){
-      if (act==='choose'){ choose(r, st.date, st.slot, [...sel]); closeSheet(); ui.date=st.date; ui.slot=st.slot; render(); }
+    onAct(act, a){
+      const pid = st.date+'_'+st.slot;
+      if (act==='choose'){ choose(r, st.date, st.slot, [...sel], {people:peopleFor(pid), double:st.double}); closeSheet(); ui.date=st.date; ui.slot=st.slot; render(); }
+      else if (act==='eat') toggleEater(a.dataset.pid, a.dataset.id);
+      else if (act==='ppl'){ const n = Math.min(20, Math.max(1, peopleFor(pid)+Number(a.dataset.v))); setEaters(pid, null, n); }
+      else if (act==='vote') vote(pid, r.id);
       else if (act==='del-recipe'){ st.confirmDel=true; draw(); }
       else if (act==='del-recipe-no'){ st.confirmDel=false; draw(); }
       else if (act==='del-recipe-yes'){ del('recipes', r.id); closeSheet(); toast('Receita apagada'); }
@@ -696,23 +1059,28 @@ function openRecipe(id, date, slot){
   };
   draw();
 }
+function toggleEater(pid, mid){
+  const cur = eatersFor(pid);
+  setEaters(pid, cur.includes(mid) ? cur.filter(m=>m!==mid) : memberIds().filter(m=>m===mid || cur.includes(m)));
+}
 
 function openNewRecipe(){
   const st = {m:new Set([ui.slot])};
   $('#sheet-root').innerHTML = `
   <div class="scrim" data-act="close-bg"><form class="sheet" id="recform" role="dialog" aria-modal="true" aria-labelledby="nr-t">
     <div class="sheet-head"><div><div class="eyebrow">Receita da família</div><h2 id="nr-t">Nova receita</h2></div><button type="button" class="x" data-act="close" aria-label="Fechar">×</button></div>
-    <div class="field"><label for="nr-name">Nome</label><input id="nr-name" required placeholder="Ex.: Arroz de tamboril da avó"></div>
+    <div class="field"><label for="nr-name">Nome</label><input id="nr-name" required maxlength="80" placeholder="Ex.: Arroz de tamboril da avó"></div>
     <div class="field"><label>Serve para</label><div class="row">
       <label class="chip" style="text-transform:none;letter-spacing:0;font-size:14px;color:var(--ink);margin:0"><input type="checkbox" id="nr-alm" ${st.m.has('almoco')?'checked':''}> Almoço</label>
       <label class="chip" style="text-transform:none;letter-spacing:0;font-size:14px;color:var(--ink);margin:0"><input type="checkbox" id="nr-jan" ${st.m.has('jantar')?'checked':''}> Jantar</label>
     </div></div>
     <div class="when">
       <div class="field"><label for="nr-tipo">Tipo de prato</label><select id="nr-tipo"><option value="carne">Carne</option><option value="peixe">Peixe</option><option value="vegetariano">Vegetariano</option><option value="">Outro</option></select></div>
+      <label class="chip" style="grid-column:1/-1;text-transform:none;letter-spacing:0;font-size:14px;color:var(--ink);margin:0;justify-self:start"><input type="checkbox" id="nr-sau"> Refeição saudável</label>
       <div class="field"><label for="nr-min">Tempo (minutos)</label><input id="nr-min" type="number" min="5" max="600" step="5" value="30" inputmode="numeric"></div>
     </div>
-    <div class="field"><label for="nr-ing">Ingredientes, um por linha</label><textarea id="nr-ing" required placeholder="Tamboril - 800 g&#10;Arroz carolino - 300 g&#10;Tomate - 3&#10;Coentros"></textarea><div class="muted" style="font-size:12px;margin-top:4px">Use um traço para separar o nome da quantidade.</div></div>
-    <div class="field"><label for="nr-st">Preparação (opcional), um passo por linha</label><textarea id="nr-st" style="min-height:90px"></textarea></div>
+    <div class="field"><label for="nr-ing">Ingredientes, um por linha</label><textarea id="nr-ing" required maxlength="3000" placeholder="Tamboril - 800 g&#10;Arroz carolino - 300 g&#10;Tomate - 3&#10;Coentros"></textarea><div class="muted" style="font-size:12px;margin-top:4px">Use um traço para separar o nome da quantidade.</div></div>
+    <div class="field"><label for="nr-st">Preparação (opcional), um passo por linha</label><textarea id="nr-st" maxlength="6000" style="min-height:90px"></textarea></div>
     <button class="btn" type="submit" ${readOnly?'disabled':''}>Guardar receita</button>
   </form></div>`;
   sheet = null;
@@ -724,7 +1092,7 @@ function openNewRecipe(){
     if (!t || !ing.length) return toast('Escreva o nome e pelo menos um ingrediente.');
     if (!m.length) return toast('Escolha almoço, jantar ou ambos.');
     const min = Math.max(5, parseInt($('#nr-min').value,10) || 30);
-    const tags = [$('#nr-tipo').value, min<=35 && 'rapido'].filter(Boolean);
+    const tags = [$('#nr-tipo').value, min<=35 && 'rapido', $('#nr-sau').checked && 'saudavel'].filter(Boolean);
     const id = 'f-'+slug(t).slice(0,40)+'-'+Date.now().toString(36);
     put('recipes', id, {t, m, tags, min, ing, st:$('#nr-st').value.split('\n').map(s=>s.trim()).filter(Boolean), emoji:'🍽️', t0:Date.now()});
     closeSheet(); toast('Receita guardada para toda a família');
@@ -740,12 +1108,17 @@ document.addEventListener('click', e=>{
   const act = a.dataset.act;
   if (act==='close-bg'){ if (e.target===a) closeSheet(); return; }
   if (act==='close'){ closeSheet(); return; }
-  if (sheet && a.closest('#sheet-root')){ sheet.onAct(act); return; }
+  if (sheet && a.closest('#sheet-root')){ sheet.onAct(act, a); return; }
   switch(act){
     case 'slot': ui.slot=a.dataset.v; ui.more=false; render(); break;
     case 'date': ui.date=a.dataset.v; render(); break;
     case 'filter': ui.filter=a.dataset.v; ui.more=false; render(); break;
-    case 'shuffle': ui.seed=Math.random(); ui.more=false; render(); break;
+    case 'shuffle': ui.shuffle++; ui.more=false; render(); break;
+    case 'unshuffle': ui.shuffle=0; ui.more=false; render(); break;
+    case 'eat': toggleEater(a.dataset.pid, a.dataset.id); break;
+    case 'plan-ask': ui.planAsk=true; render(); break;
+    case 'plan-no': ui.planAsk=false; render(); break;
+    case 'plan-yes': ui.planAsk=false; planWeek(); break;
     case 'more': ui.more=!ui.more; render(); break;
     case 'open': openRecipe(a.dataset.id, a.dataset.date, a.dataset.slot); break;
     case 'new-recipe': openNewRecipe(); break;
@@ -754,6 +1127,7 @@ document.addEventListener('click', e=>{
     case 'buy': { if (readOnly) return toast('Não tem permissão para alterar a lista.'); const it=S.items.get(a.dataset.k); if(it) put('items',a.dataset.k,{...it,bought:true,boughtAt:Date.now()}); break; }
     case 'rebuy': { if (readOnly) return toast('Não tem permissão para alterar a lista.'); const it=S.items.get(a.dataset.k); if(it) put('items',a.dataset.k,{...it,bought:false,meals:[],qty:'',t:Date.now()}); break; }
     case 'delete': { if (readOnly) return toast('Não tem permissão para alterar a lista.'); const it=S.items.get(a.dataset.k); del('items',a.dataset.k); if(it) toast(it.name+' eliminado'); break; }
+    case 'healthy': ui.healthy=!ui.healthy; ls.set('mesa-saudavel', ui.healthy?'1':'0'); ui.more=false; render(); break;
     case 'create-family': createFamily(); break;
     case 'family': openFamily(); break;
     case 'quick': addItem(a.dataset.v, '', null); toast(a.dataset.v+' adicionado à lista'); break;
@@ -763,6 +1137,7 @@ document.addEventListener('click', e=>{
 document.addEventListener('change', e=>{ if (sheet && e.target.closest('#sheet-root')) sheet.onChange(e); });
 document.addEventListener('submit', e=>{
   if (e.target.id==='joinform'){ e.preventDefault(); joinFamily($('#joinlink').value); return; }
+  if (sheet && sheet.onSubmit && e.target.closest('#sheet-root')){ e.preventDefault(); sheet.onSubmit(e); return; }
   if (e.target.id!=='addform') return;
   e.preventDefault();
   const raw = $('#addname').value.trim(); if (!raw) return;
