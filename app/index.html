@@ -2,7 +2,7 @@
 <html lang="pt-PT">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-lmQn+f6AmYlKMRpDeiuabptV54fOuh7VU+zkMaP5ReE=' https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://*.googleapis.com https://www.gstatic.com https://*.firebaseio.com wss://*.firebaseio.com https://*.firebaseapp.com; frame-src https://*.firebaseapp.com; worker-src 'self'; manifest-src 'self'; base-uri 'none'; object-src 'none'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-dJq0HuyBurAIAssZM3V/q6qENiYDceKsKF4E2GYyrH8=' https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://*.googleapis.com https://www.gstatic.com https://*.firebaseio.com wss://*.firebaseio.com https://*.firebaseapp.com; frame-src https://*.firebaseapp.com; worker-src 'self'; manifest-src 'self'; base-uri 'none'; object-src 'none'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Mesa da Família</title>
 <meta name="description" content="Receitas para o almoço e jantar da família e lista de compras partilhada.">
@@ -100,7 +100,12 @@ h3{font-family:var(--f-display);font-weight:600;font-size:17px;margin:0}
 .kind{font-size:14px;color:var(--muted);display:flex;gap:8px;align-items:center}
 .kind::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--basil);flex:none}
 .kind.relaxed::before{background:var(--tomato)}
-.catpick{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.catpick{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+@media (min-width:560px){.catpick{grid-template-columns:repeat(6,1fr)}}
+.star{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 14px;font-weight:700}
+.star[aria-pressed="true"]{border-color:#C99A00;background:#FFF4CC;color:#5C4500}
+.quick button.on{border-style:solid;border-color:var(--tomato)}
+.quick button .rm{margin-left:2px;color:var(--tomato);font-weight:800}
 .catpick button{border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:12px 4px;display:flex;flex-direction:column;align-items:center;gap:4px;font-weight:700;font-size:13px}
 .catpick button span{font-size:26px;line-height:1}
 .catpick button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
@@ -270,10 +275,12 @@ const ING_RAW = {
   'pilhas':['🔋','casa'],'febras':['🥩','talho'],'piri-piri':['🌶️','desp'],'pao ralado':['🍞','merc'],'douradinhos':['🐟','cong'],
   'abacate':['🥑','hort'],'cuscuz':['🍚','merc'],'hortela':['🌿','hort'],'lulas':['🦑','talho'],'pao de forma':['🍞','pad'],
   'linguica':['🌭','talho'],'salsichas':['🌭','talho'],'cerveja':['🍺','merc'],'cominhos':['🌿','desp'],'tamboril':['🐟','talho'],
-  'peixe':['🐟','talho'],'quinoa':['🍚','merc'],'soja':['🫙','merc'],'sesamo':['🌰','merc'],'feta':['🧀','lat'],'massa quebrada':['🥧','merc'],'bife':['🥩','talho'],'comida para o gato':['🐈','out'],'comida para o cao':['🐕','out']
+  'peixe':['🐟','talho'],'quinoa':['🍚','merc'],'soja':['🫙','merc'],'sesamo':['🌰','merc'],'feta':['🧀','lat'],'massa quebrada':['🥧','merc'],'bife':['🥩','talho'],'comida para o gato':['🐈','out'],'paprika':['🌶️','desp'],'grelos':['🥬','hort'],'papel de aluminio':['🧻','casa'],'pelicula aderente':['🧻','casa'],'amaciador':['🧴','casa'],'fraldas':['🧷','casa'],'acucar':['🍬','merc'],'comida para o cao':['🐕','out']
 };
 /* Produtos frequentes fora das receitas, para juntar à lista com um toque */
 const QUICK = ['Leite','Pão','Ovos','Café','Cereais','Iogurtes','Manteiga','Fruta','Bananas','Sumo','Água','Bolachas',
+  'Arroz','Massa','Azeite','Açúcar','Farinha','Atum','Batatas','Cebolas','Tomate','Queijo','Fiambre',
+  'Papel de alumínio','Película aderente','Amaciador',
   'Papel higiénico','Rolo de cozinha','Guardanapos','Detergente da loiça','Detergente da roupa','Lixívia','Esponjas','Sacos do lixo',
   'Pasta de dentes','Champô','Gel de banho','Pilhas'];
 const norm = s => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,' ').trim();
@@ -349,23 +356,35 @@ const BASE = [
  {id:'bowl-salmao',t:'Taça de salmão com arroz integral',m:['jantar','almoco'],tags:['peixe','rapido'],min:30,ing:['Lombos de salmão|4','Arroz integral|300 g','Abacate|1','Pepino|1','Cenouras|2','Molho de soja|q.b.','Sésamo|q.b.'],st:['Coza o arroz integral (cerca de 25 minutos).','Grelhe o salmão 4 minutos de cada lado e desfaça em lascas.','Corte o abacate, o pepino e a cenoura em tiras finas.','Monte em taças: arroz, salmão e legumes. Tempere com um pouco de soja e sésamo.']},
  {id:'pescada-forno-legumes',t:'Pescada no forno com legumes',m:['jantar','almoco'],tags:['peixe','forno'],min:35,ing:['Postas de pescada|4','Batata-doce|2','Curgete|1','Tomate|2','Cebola|1','Limão|1','Azeite|q.b.'],st:['Corte a batata-doce em rodelas finas e asse 10 minutos a 200 °C.','Junte a curgete, o tomate e a cebola às rodelas.','Coloque a pescada temperada com limão por cima e regue com um fio de azeite.','Asse mais 20 minutos.']},
  {id:'omelete-legumes',t:'Omelete de espinafres e cogumelos',m:['jantar'],tags:['vegetariano','rapido'],min:15,ing:['Ovos|8','Espinafres|150 g','Cogumelos|200 g','Cebola|1','Alface|1','Tomate|2'],st:['Salteie a cebola e os cogumelos laminados, junte os espinafres até murcharem.','Bata os ovos com sal e verta sobre os legumes.','Coza em lume brando, dobre e sirva com salada.']},
- {id:'peru-estufado',t:'Peru estufado com legumes',m:['jantar','almoco'],tags:['carne'],min:40,ing:['Peito de peru em cubos|700 g','Cenouras|3','Ervilhas|200 g','Cebola|1','Tomate|2','Arroz integral|300 g','Louro|1 folha'],st:['Ponha o arroz integral a cozer.','Aloure o peru com um fio de azeite e reserve.','Refogue a cebola e o tomate, junte a cenoura às rodelas, o louro e um copo de água.','Junte o peru e as ervilhas e coza tapado 20 minutos.']}
+ {id:'peru-estufado',t:'Peru estufado com legumes',m:['jantar','almoco'],tags:['carne'],min:40,ing:['Peito de peru em cubos|700 g','Cenouras|3','Ervilhas|200 g','Cebola|1','Tomate|2','Arroz integral|300 g','Louro|1 folha'],st:['Ponha o arroz integral a cozer.','Aloure o peru com um fio de azeite e reserve.','Refogue a cebola e o tomate, junte a cenoura às rodelas, o louro e um copo de água.','Junte o peru e as ervilhas e coza tapado 20 minutos.']},
+ {id:'af-asas-frango',t:'Asas de frango crocantes na airfryer',m:['jantar'],tags:['carne','rapido','airfryer'],min:25,ing:['Asas de frango|1 kg','Alho|3 dentes','Colorau|1 c. chá','Limão|1','Batatas|600 g','Alface|1','Azeite|q.b.','Sal|q.b.'],st:['Tempere as asas com alho picado, colorau, sumo de limão, sal e um fio de azeite.','Corte as batatas em gomos e envolva em azeite e sal.','Airfryer a 200 °C: batatas 10 minutos, junte as asas e cozinhe mais 15 a 18 minutos, agitando a meio.','Sirva com salada de alface.']},
+ {id:'af-salmao-legumes',t:'Salmão com legumes na airfryer',m:['jantar','almoco'],tags:['peixe','rapido','airfryer','saudavel'],min:20,ing:['Lombos de salmão|4','Curgete|1','Pimento|1','Tomate cherry|250 g','Limão|1','Azeite|q.b.','Sal|q.b.'],st:['Corte a curgete e o pimento em pedaços e envolva com azeite e sal.','Airfryer a 190 °C durante 8 minutos.','Junte o salmão temperado com limão e sal e os tomates cherry.','Cozinhe mais 10 minutos a 190 °C.']},
+ {id:'af-panados',t:'Panados de frango na airfryer com salada',m:['jantar'],tags:['carne','rapido','airfryer'],min:25,ing:['Peito de frango|600 g','Ovos|2','Pão ralado|150 g','Alho|2 dentes','Limão|1','Alface|1','Tomate|2','Azeite|q.b.'],st:['Corte o frango em bifes finos e tempere com alho, limão e sal.','Passe por ovo batido e pão ralado.','Pincele com azeite e coza na airfryer a 200 °C 12 minutos, virando a meio.','Sirva com salada de alface e tomate.']},
+ {id:'af-coxas-batata-doce',t:'Coxas de frango com batata-doce na airfryer',m:['jantar','almoco'],tags:['carne','airfryer'],min:35,ing:['Coxas de frango|8','Batata-doce|800 g','Alho|3 dentes','Paprika|1 c. chá','Brócolos|1','Azeite|q.b.','Sal|q.b.'],st:['Tempere as coxas com alho, paprika, sal e azeite.','Corte a batata-doce em cubos e envolva em azeite.','Airfryer a 190 °C: coxas 15 minutos, junte a batata-doce e cozinhe mais 15 minutos.','Coza os brócolos ao vapor e sirva tudo junto.']},
+ {id:'af-hamburgueres',t:'Hambúrgueres caseiros na airfryer',m:['jantar'],tags:['carne','rapido','airfryer'],min:25,ing:['Carne picada|600 g','Pão de hambúrguer|4','Queijo|4 fatias','Alface|1','Tomate|2','Cebola|1','Batatas|600 g','Azeite|q.b.'],st:['Molde 4 hambúrgueres com a carne temperada com sal e pimenta.','Batatas em palitos com um fio de azeite: airfryer a 200 °C 15 minutos, agitando a meio.','Hambúrgueres na airfryer a 190 °C 8 a 10 minutos, com o queijo por cima no último minuto.','Monte no pão com alface, tomate e cebola.']},
+ {id:'af-bacalhau-murro',t:'Bacalhau com batatas a murro na airfryer',m:['almoco','jantar'],tags:['peixe','airfryer'],min:40,ing:['Lombos de bacalhau demolhado|4','Batatas pequenas|1 kg','Alho|1 cabeça','Grelos|1 molho','Azeite|q.b.','Sal grosso|q.b.'],st:['Coza as batatas com casca 15 minutos, dê-lhes um murro e ponha sal grosso e azeite.','Airfryer a 200 °C 10 minutos até alourarem.','Junte o bacalhau regado com azeite e alho laminado e cozinhe mais 12 minutos a 190 °C.','Salteie os grelos em azeite e alho e sirva.']},
+ {id:'af-filetes-pescada',t:'Filetes de pescada na airfryer com arroz',m:['jantar'],tags:['peixe','rapido','airfryer'],min:25,ing:['Filetes de pescada|8','Ovos|2','Pão ralado|150 g','Limão|1','Arroz|300 g','Tomate|2','Cebola|1'],st:['Tempere os filetes com sal e limão, passe por ovo e pão ralado.','Airfryer a 200 °C 10 a 12 minutos, virando a meio.','Faça um arroz de tomate com cebola refogada.','Sirva os filetes com o arroz.']},
+ {id:'af-legumes-grao',t:'Legumes assados com grão crocante na airfryer',m:['jantar','almoco'],tags:['vegetariano','rapido','airfryer','saudavel'],min:25,ing:['Grão-de-bico cozido|1 frasco','Abóbora|500 g','Curgete|1','Cebola roxa|1','Cominhos|1 c. chá','Iogurte natural|2','Azeite|q.b.','Sal|q.b.'],st:['Escorra e seque bem o grão; envolva com azeite, cominhos e sal.','Corte os legumes em pedaços e tempere com azeite e sal.','Airfryer a 200 °C 18 a 20 minutos, agitando a meio.','Sirva com um molho de iogurte com limão e sal.']},
+ {id:'af-febras',t:'Febras na airfryer com batata e salada',m:['jantar'],tags:['carne','rapido','airfryer'],min:30,ing:['Febras de porco|8','Alho|3 dentes','Vinho branco|1/2 copo','Louro|1 folha','Batatas|700 g','Alface|1','Azeite|q.b.'],st:['Tempere as febras com alho, vinho, louro e sal durante 10 minutos.','Batatas em cubos na airfryer a 200 °C 15 minutos.','Febras na airfryer a 200 °C 10 a 12 minutos, virando a meio.','Sirva com salada.']},
+ {id:'af-quesadillas',t:'Quesadillas de legumes na airfryer',m:['jantar'],tags:['vegetariano','rapido','airfryer'],min:20,ing:['Tortilhas|8','Queijo ralado|200 g','Feijão|1 lata','Milho|1 lata','Pimento|1','Cebola|1'],st:['Salteie a cebola e o pimento.','Recheie as tortilhas com feijão, milho, legumes e queijo e dobre ao meio.','Airfryer a 180 °C 6 a 8 minutos até estalarem.','Corte em triângulos e sirva.']},
 ];
 /* Pratos com muitos legumes, peixe ou carnes magras e pouca gordura */
 const HEALTHY = new Set(['sopa-legumes','salmao-forno','peru-arroz','dourada','caril-grao','pescada-todos','lulas-grelhadas','cuscuz-legumes','bolonhesa-lentilhas','bacalhau-grao','empadao-lentilhas','hamburguer-grao','caldeirada','massa-pesto','salada-quinoa','frango-legumes','sopa-peixe','bowl-salmao','pescada-forno-legumes','omelete-legumes','peru-estufado']);
 BASE.forEach(r=>{ if (HEALTHY.has(r.id)) r.tags.push('saudavel'); });
 const MAIN_EMOJI = r => {
+  if (r.custom) return r.emoji || '🍽️';
+  if (!r.ing || !r.ing.length) return '🍽️';
   for (const s of r.ing){ const [e,c] = lookup(s.split('|')[0]); if (c==='talho') return e; }
   if (r.tags.includes('sopa')) return '🥣';
   return lookup(r.ing[0].split('|')[0])[0];
 };
-const TAGS = {saudavel:'Saudável',rapido:'Rápido',peixe:'Peixe',carne:'Carne',vegetariano:'Vegetariano',sopa:'Sopa',forno:'Forno'};
+const TAGS = {saudavel:'Saudável',rapido:'Rápido',peixe:'Peixe',carne:'Carne',vegetariano:'Vegetariano',sopa:'Sopa',forno:'Forno',airfryer:'Airfryer'};
 const SLOTS = {almoco:'Almoço',jantar:'Jantar'};
-const CHOICE = [['todos','🍽️','Todas'],['carne','🥩','Carne'],['peixe','🐟','Peixe'],['vegetariano','🥦','Vegetariano']];
+const CHOICE = [['todos','🍽️','Todas'],['carne','🥩','Carne'],['peixe','🐟','Peixe'],['vegetariano','🥦','Vegetariano'],['airfryer','♨️','Airfryer'],['favoritas','⭐','Favoritas']];
 
 /* ---------- Estado partilhado ---------- */
-const COLS = ['items','plan','recipes','members','votes','eaters'];
-const S = {items:new Map(), plan:new Map(), recipes:new Map(), members:new Map(), votes:new Map(), eaters:new Map(), devices:new Map()};
+const COLS = ['items','plan','recipes','members','votes','eaters','favs','quick'];
+const S = {items:new Map(), plan:new Map(), recipes:new Map(), members:new Map(), votes:new Map(), eaters:new Map(), favs:new Map(), quick:new Map(), devices:new Map()};
 /* Segurança: cada telemóvel entra com uma sessão anónima do Firebase. Só os telemóveis que abriram o convite
    (código da família + chave secreta) ficam registados em families/<código>/devices, e as regras do Firestore
    só deixam esses ler ou alterar os dados da família. */
@@ -829,7 +848,8 @@ function suggest(date, slot, o={}){
   const mids = eatersFor(date+'_'+slot);
   const filter = o.filter || ui.filter;
   let pool = allRecipes().filter(r=>(r.m||[]).includes(slot));
-  if (filter!=='todos') pool = pool.filter(r=>(r.tags||[]).includes(filter));
+  if (filter==='favoritas') pool = pool.filter(r=>S.favs.has(r.id));
+  else if (filter!=='todos') pool = pool.filter(r=>(r.tags||[]).includes(filter));
   if (ui.healthy) pool = pool.filter(r=>(r.tags||[]).includes('saudavel'));
   const repeated = pool.filter(r=>used.has(r.id)).length;
   pool = pool.filter(r=>!used.has(r.id));
@@ -837,7 +857,7 @@ function suggest(date, slot, o={}){
   const avoided = pool.length - ok.length;
   const seed = hashStr(date+slot) + (o.shuffle ?? ui.shuffle)*7919;
   const fit = r => { const m = r.min || ((r.tags||[]).includes('rapido') ? 25 : 45); return relaxed ? (m>=45?0:1.2) : (m<=35?0:1.2); };
-  const list = ok.map(r=>({r,s:rand(seed+hashStr(r.id))+fit(r)-0.6*likeScore(r,mids)+(o.penalty?o.penalty(r):0)})).sort((a,b)=>a.s-b.s).map(x=>x.r);
+  const list = ok.map(r=>({r,s:rand(seed+hashStr(r.id))+fit(r)-0.6*likeScore(r,mids)-(S.favs.has(r.id)?0.35:0)+(o.penalty?o.penalty(r):0)})).sort((a,b)=>a.s-b.s).map(x=>x.r);
   return {list, repeated, avoided, mids};
 }
 const mainTag = r => r ? ['peixe','carne','vegetariano'].find(t=>(r.tags||[]).includes(t)) || 'outro' : null;
@@ -904,17 +924,17 @@ function renderSugestoes(){
   ${shown.length ? `<div class="cards">${shown.map(r=>`
     <button class="card" data-act="open" data-id="${esc(r.id)}">
       <span class="em" aria-hidden="true">${esc(r.custom?(r.emoji||'🍽️'):MAIN_EMOJI(r))}</span>
-      <div><h3>${esc(r.t)}</h3>
-        <div class="meta">${r.min?esc(r.min>=120?(r.min/60).toString().replace('.',',')+' h':r.min+' min')+' · ':''}${cnt(r)} ingredientes${r.custom?' · da família':''}</div>
+      <div><h3>${S.favs.has(r.id)?'<span aria-label="Favorita">⭐ </span>':''}${esc(r.t)}</h3>
+        <div class="meta">${r.min?esc(r.min>=120?(r.min/60).toString().replace('.',',')+' h':r.min+' min')+' · ':''}${cnt(r) ? cnt(r)+' ingredientes' : 'sem ingredientes'}${r.custom ? (r.by && S.members.has(r.by) ? ' · 💡 sugerida por '+esc(S.members.get(r.by).name) : ' · da família') : ''}</div>
         <div style="margin-top:6px">${votesOf(r.id)?`<span class="tag vote">👍 ${votesOf(r.id)}</span>`:''}${effort(r)?`<span class="tag ${effort(r)==='Elaborada'?'hot':''}">${effort(r)}</span>`:''}${(r.tags||[]).filter(t=>t!=='rapido').map(t=>`<span class="tag${t==='saudavel'?' ok':''}">${esc(TAGS[t]||t)}</span>`).join('')}</div>
       </div>
-    </button>`).join('')}</div>` : `<div class="empty"><b>Sem receitas para este filtro</b>${ui.hidden?'As que servem já foram escolhidas nesta semana. ':''}Escolha outro filtro ou adicione uma receita da família.</div>`}
+    </button>`).join('')}</div>` : `<div class="empty"><b>${ui.filter==='favoritas' && !S.favs.size ? 'Ainda não há favoritas' : 'Sem receitas para este filtro'}</b>${ui.filter==='favoritas' && !S.favs.size ? 'Abra uma receita e toque em ⭐ para a marcar como favorita.' : (ui.hidden?'As que servem já foram escolhidas nesta semana. ':'')+'Escolha outro filtro ou sugira uma refeição.'}</div>`}
   <div class="row">
     <button class="btn ghost" data-act="shuffle">Outras sugestões</button>
     ${ui.shuffle?`<button class="link" data-act="unshuffle" title="As mesmas sugestões que o resto da família vê">Voltar às da família</button>`:''}
     ${list.length>4 ? `<button class="link" data-act="more">${ui.more?'Mostrar menos':'Ver todas ('+list.length+')'}</button>`:''}
     <span style="flex:1"></span>
-    <button class="link" data-act="new-recipe">+ Receita da família</button>
+    <button class="btn ghost" data-act="new-recipe">💡 Sugerir uma refeição</button>
   </div>`;
 }
 
@@ -943,10 +963,17 @@ function tile(it,key,done){
     <span class="em" aria-hidden="true">${esc(it.emoji||'🛒')}</span><span class="nm">${esc(it.name)}</span>${it.qty?`<span class="q">${esc(it.qty)}</span>`:''}
   </button><button class="tile-del del" style="position:absolute;top:4px;right:4px;width:26px;height:26px;border-radius:8px;border:0;background:${done?'rgba(0,0,0,.06)':'rgba(0,0,0,.18)'};color:${done?'var(--done-ink)':'var(--tomato-ink)'};font-size:15px;line-height:1" data-act="delete" data-k="${esc(key)}" aria-label="Eliminar ${esc(it.name)}">×</button></div>`;
 }
+/* Produtos frequentes: os da app mais os que a família juntou, menos os que tirou (guardados em quick/<produto>) */
+function quickList(){
+  const out = new Map(QUICK.map(q=>[slug(q), q]));
+  [...S.quick].sort((a,b)=>(a[1].t||0)-(b[1].t||0)).forEach(([k,v])=>{ if (v.hidden) out.delete(k); else if (v.name) out.set(k, v.name); });
+  return [...out].map(([k,name])=>({k,name}));
+}
 function renderLista(){
   const items = [...S.items].filter(([,it])=>!it.bought);
   const done = [...S.items].filter(([,it])=>it.bought).sort((a,b)=>(b[1].boughtAt||0)-(a[1].boughtAt||0)).slice(0,30);
-  const quick = QUICK.filter(q=>{ const it=S.items.get(slug(q)); return !it || it.bought; });
+  const allQ = quickList();
+  const quick = ui.qedit ? allQ : allQ.filter(q=>{ const it=S.items.get(slug(q.name)); return !it || it.bought; });
   const groups = CATS.map(([c,l])=>[l, items.filter(([,it])=>(it.cat||'out')===c).sort((a,b)=>a[1].name.localeCompare(b[1].name,'pt'))]).filter(g=>g[1].length);
   return `
   <div class="row" style="justify-content:space-between;align-items:flex-end">
@@ -960,15 +987,23 @@ function renderLista(){
   ${groups.length ? groups.map(([l,arr])=>`<section class="group"><h3>${esc(l)}</h3><div class="tiles">${arr.map(([k,it])=>tile(it,k,false)).join('')}</div></section>`).join('')
    : `<div class="empty"><b>A lista está vazia</b>Escolha uma refeição em Sugestões e os ingredientes aparecem aqui, ou adicione um artigo acima.</div>`}
   ${items.length ? `<p class="muted" style="margin:0;font-size:13px">Toque num artigo quando o puser no carrinho. O × elimina-o se não for preciso.</p>`:''}
-  ${quick.length ? `<section class="group"><h3>Outros produtos</h3><div class="muted" style="font-size:13px">Toque para juntar à lista. Para outro produto, escreva-o no campo acima (pode indicar a quantidade, ex.: Água 6 l).</div><div class="quick">${quick.map(q=>`<button data-act="quick" data-v="${esc(q)}"><span aria-hidden="true">${esc(lookup(q)[0])}</span>${esc(q)}</button>`).join('')}</div></section>`:''}
+  <section class="group"><div class="row" style="justify-content:space-between"><h3>Outros produtos</h3><button class="link" data-act="qedit">${ui.qedit?'Concluído':'Editar'}</button></div>
+    <div class="muted" style="font-size:13px">${ui.qedit ? 'Toque num produto para o tirar dos frequentes. Vale para toda a família.' : 'Toque para juntar à lista. Para uma compra pontual, escreva-a no campo acima (ex.: Água 6 l).'}</div>
+    <div class="quick">${quick.map(q=> ui.qedit
+      ? `<button class="on" data-act="qdel" data-k="${esc(q.k)}" data-v="${esc(q.name)}" aria-label="Tirar ${esc(q.name)} dos frequentes"><span aria-hidden="true">${esc(lookup(q.name)[0])}</span>${esc(q.name)}<span class="rm" aria-hidden="true">×</span></button>`
+      : `<button data-act="quick" data-v="${esc(q.name)}"><span aria-hidden="true">${esc(lookup(q.name)[0])}</span>${esc(q.name)}</button>`).join('')}</div>
+    ${ui.qadd ? `<form class="addbar" id="quickform" autocomplete="off"><input id="quickname" maxlength="40" placeholder="Novo produto frequente (ex.: Fraldas)" aria-label="Novo produto frequente"><button class="btn" type="submit">Juntar</button><button class="btn ghost" type="button" data-act="qadd-no">Cancelar</button></form>`
+      : `<button class="link" style="align-self:flex-start" data-act="qadd">+ Novo produto frequente</button>`}
+  </section>
   ${done.length ? `<section class="group"><div class="row" style="justify-content:space-between"><h3>Comprados recentemente</h3><button class="link" data-act="clear">Limpar</button></div><div class="tiles">${done.map(([k,it])=>tile(it,k,true)).join('')}</div></section>`:''}`;
 }
 
 function render(){
   const v = $('#view');
-  const active = document.activeElement && document.activeElement.id==='addname' ? $('#addname').value : null;
+  const aid = document.activeElement && ['addname','quickname'].includes(document.activeElement.id) ? document.activeElement.id : null;
+  const active = aid ? $('#'+aid).value : null;
   v.innerHTML = mode==='welcome' ? renderWelcome() : tab==='plano' ? renderPlano() : tab==='lista' ? renderLista() : renderSugestoes();
-  if (active!==null && $('#addname')){ $('#addname').value = active; $('#addname').focus(); }
+  if (active!==null && $('#'+aid)){ $('#'+aid).value = active; $('#'+aid).focus(); }
   document.querySelectorAll('nav.tabs button').forEach(b=>b.setAttribute('aria-current', b.dataset.tab===tab?'page':'false'));
   const n = [...S.items.values()].filter(i=>!i.bought).length;
   const b = $('#badge'); b.hidden = !n; b.textContent = n;
@@ -1023,6 +1058,8 @@ function openRecipe(id, date, slot){
       ${cur && cur.recipeId!==r.id ? `<div class="note">Vai substituir ${esc(cur.title)} neste dia.</div>`:''}
       ${(()=>{ const u = usedNear(st.date, st.slot).get(r.id); return u ? `<div class="note">Este prato já está escolhido para ${esc(dayLabelIso(u.date).toLowerCase())} ao ${u.slot==='almoco'?'almoço':'jantar'}. Assim repete-se na mesma semana.</div>` : ''; })()}
       ${cur && cur.recipeId===r.id ? `<div class="note" style="color:var(--basil)">Já está no plano para este dia. Se mudar as pessoas ou a marmita, toque em Escolher para atualizar a lista.</div>`:''}
+      <div class="row"><button class="star" data-act="fav" aria-pressed="${S.favs.has(r.id)}">${S.favs.has(r.id) ? '⭐ Favorita da família' : '☆ Marcar como favorita'}</button>
+        ${r.custom && r.by && S.members.has(r.by) ? `<span class="muted" style="font-size:13px">💡 Sugerida por ${esc(S.members.get(r.by).name)}</span>`:''}</div>
       ${allM.length ? `<div class="row">
         ${mine ? `<button class="btn ghost" data-act="vote" aria-pressed="${!!(myVote && myVote.recipeId===r.id)}">${myVote && myVote.recipeId===r.id ? '👍 Votou neste (retirar)' : '👍 Votar neste'}</button>`
           : `<label for="sh-me" class="muted" style="font-size:13px">Para votar, diga quem é:</label><select id="sh-me" style="width:auto"><option value="">Escolha…</option>${allM.map(m=>`<option value="${esc(m)}">${esc(S.members.get(m).name)}</option>`).join('')}</select>`}
@@ -1052,6 +1089,7 @@ function openRecipe(id, date, slot){
       else if (act==='eat') toggleEater(a.dataset.pid, a.dataset.id);
       else if (act==='ppl'){ const n = Math.min(20, Math.max(1, peopleFor(pid)+Number(a.dataset.v))); setEaters(pid, null, n); }
       else if (act==='vote') vote(pid, r.id);
+      else if (act==='fav'){ if (S.favs.has(r.id)){ del('favs', r.id); toast('Já não é favorita'); } else { put('favs', r.id, {t:Date.now(), by:me()||''}); toast('⭐ Marcada como favorita'); } }
       else if (act==='del-recipe'){ st.confirmDel=true; draw(); }
       else if (act==='del-recipe-no'){ st.confirmDel=false; draw(); }
       else if (act==='del-recipe-yes'){ del('recipes', r.id); closeSheet(); toast('Receita apagada'); }
@@ -1068,20 +1106,25 @@ function openNewRecipe(){
   const st = {m:new Set([ui.slot])};
   $('#sheet-root').innerHTML = `
   <div class="scrim" data-act="close-bg"><form class="sheet" id="recform" role="dialog" aria-modal="true" aria-labelledby="nr-t">
-    <div class="sheet-head"><div><div class="eyebrow">Receita da família</div><h2 id="nr-t">Nova receita</h2></div><button type="button" class="x" data-act="close" aria-label="Fechar">×</button></div>
-    <div class="field"><label for="nr-name">Nome</label><input id="nr-name" required maxlength="80" placeholder="Ex.: Arroz de tamboril da avó"></div>
+    <div class="sheet-head"><div><div class="eyebrow">Sugestão da família</div><h2 id="nr-t">Sugerir uma refeição</h2></div><button type="button" class="x" data-act="close" aria-label="Fechar">×</button></div>
+    <p class="muted" style="margin:0">Basta o nome do prato. Os ingredientes e a preparação são opcionais, mas com os ingredientes eles vão logo para a lista quando o prato for escolhido.</p>
+    <div class="field"><label for="nr-name">Nome do prato</label><input id="nr-name" required maxlength="80" placeholder="Ex.: Arroz de tamboril da avó"></div>
+    ${S.members.size ? `<div class="field"><label for="nr-by">Quem sugere</label><select id="nr-by">${memberIds().map(id=>`<option value="${esc(id)}" ${id===me()?'selected':''}>${esc(S.members.get(id).name)}</option>`).join('')}</select></div>`:''}
     <div class="field"><label>Serve para</label><div class="row">
       <label class="chip" style="text-transform:none;letter-spacing:0;font-size:14px;color:var(--ink);margin:0"><input type="checkbox" id="nr-alm" ${st.m.has('almoco')?'checked':''}> Almoço</label>
       <label class="chip" style="text-transform:none;letter-spacing:0;font-size:14px;color:var(--ink);margin:0"><input type="checkbox" id="nr-jan" ${st.m.has('jantar')?'checked':''}> Jantar</label>
     </div></div>
     <div class="when">
       <div class="field"><label for="nr-tipo">Tipo de prato</label><select id="nr-tipo"><option value="carne">Carne</option><option value="peixe">Peixe</option><option value="vegetariano">Vegetariano</option><option value="">Outro</option></select></div>
-      <label class="chip" style="grid-column:1/-1;text-transform:none;letter-spacing:0;font-size:14px;color:var(--ink);margin:0;justify-self:start"><input type="checkbox" id="nr-sau"> Refeição saudável</label>
+      <div class="row" style="grid-column:1/-1">
+        <label class="chip" style="text-transform:none;letter-spacing:0;font-size:14px;color:var(--ink);margin:0"><input type="checkbox" id="nr-sau"> Refeição saudável</label>
+        <label class="chip" style="text-transform:none;letter-spacing:0;font-size:14px;color:var(--ink);margin:0"><input type="checkbox" id="nr-af"> Feita na airfryer</label>
+      </div>
       <div class="field"><label for="nr-min">Tempo (minutos)</label><input id="nr-min" type="number" min="5" max="600" step="5" value="30" inputmode="numeric"></div>
     </div>
-    <div class="field"><label for="nr-ing">Ingredientes, um por linha</label><textarea id="nr-ing" required maxlength="3000" placeholder="Tamboril - 800 g&#10;Arroz carolino - 300 g&#10;Tomate - 3&#10;Coentros"></textarea><div class="muted" style="font-size:12px;margin-top:4px">Use um traço para separar o nome da quantidade.</div></div>
+    <div class="field"><label for="nr-ing">Ingredientes (opcional), um por linha</label><textarea id="nr-ing" maxlength="3000" placeholder="Tamboril - 800 g&#10;Arroz carolino - 300 g&#10;Tomate - 3&#10;Coentros"></textarea><div class="muted" style="font-size:12px;margin-top:4px">Use um traço para separar o nome da quantidade.</div></div>
     <div class="field"><label for="nr-st">Preparação (opcional), um passo por linha</label><textarea id="nr-st" maxlength="6000" style="min-height:90px"></textarea></div>
-    <button class="btn" type="submit" ${readOnly?'disabled':''}>Guardar receita</button>
+    <button class="btn" type="submit" ${readOnly?'disabled':''}>Guardar sugestão</button>
   </form></div>`;
   sheet = null;
   $('#recform').addEventListener('submit', e=>{
@@ -1089,13 +1132,14 @@ function openNewRecipe(){
     const t = $('#nr-name').value.trim();
     const ing = $('#nr-ing').value.split('\n').map(l=>l.trim()).filter(Boolean).map(l=>{ const p=l.split(/\s+[-–—]\s+|\s*\|\s*/); return p[0].trim()+'|'+(p[1]||'').trim(); });
     const m = [$('#nr-alm').checked&&'almoco',$('#nr-jan').checked&&'jantar'].filter(Boolean);
-    if (!t || !ing.length) return toast('Escreva o nome e pelo menos um ingrediente.');
+    if (!t) return toast('Escreva o nome do prato.');
     if (!m.length) return toast('Escolha almoço, jantar ou ambos.');
     const min = Math.max(5, parseInt($('#nr-min').value,10) || 30);
-    const tags = [$('#nr-tipo').value, min<=35 && 'rapido', $('#nr-sau').checked && 'saudavel'].filter(Boolean);
+    const tags = [$('#nr-tipo').value, min<=35 && 'rapido', $('#nr-sau').checked && 'saudavel', $('#nr-af').checked && 'airfryer'].filter(Boolean);
+    const by = ($('#nr-by') && $('#nr-by').value) || me() || '';
     const id = 'f-'+slug(t).slice(0,40)+'-'+Date.now().toString(36);
-    put('recipes', id, {t, m, tags, min, ing, st:$('#nr-st').value.split('\n').map(s=>s.trim()).filter(Boolean), emoji:'🍽️', t0:Date.now()});
-    closeSheet(); toast('Receita guardada para toda a família');
+    put('recipes', id, {t, m, tags, min, ing, st:$('#nr-st').value.split('\n').map(s=>s.trim()).filter(Boolean), emoji:'💡', by, t0:Date.now()});
+    closeSheet(); toast('Sugestão guardada para toda a família');
   });
   setTimeout(()=>$('#nr-name') && $('#nr-name').focus(), 30);
 }
@@ -1116,6 +1160,10 @@ document.addEventListener('click', e=>{
     case 'shuffle': ui.shuffle++; ui.more=false; render(); break;
     case 'unshuffle': ui.shuffle=0; ui.more=false; render(); break;
     case 'eat': toggleEater(a.dataset.pid, a.dataset.id); break;
+    case 'qedit': ui.qedit=!ui.qedit; ui.qadd=false; render(); break;
+    case 'qadd': ui.qadd=true; render(); setTimeout(()=>$('#quickname')&&$('#quickname').focus(),30); break;
+    case 'qadd-no': ui.qadd=false; render(); break;
+    case 'qdel': put('quick', a.dataset.k, {name:a.dataset.v, hidden:true, t:Date.now()}); toast(a.dataset.v+' saiu dos produtos frequentes'); break;
     case 'plan-ask': ui.planAsk=true; render(); break;
     case 'plan-no': ui.planAsk=false; render(); break;
     case 'plan-yes': ui.planAsk=false; planWeek(); break;
@@ -1138,6 +1186,13 @@ document.addEventListener('change', e=>{ if (sheet && e.target.closest('#sheet-r
 document.addEventListener('submit', e=>{
   if (e.target.id==='joinform'){ e.preventDefault(); joinFamily($('#joinlink').value); return; }
   if (sheet && sheet.onSubmit && e.target.closest('#sheet-root')){ e.preventDefault(); sheet.onSubmit(e); return; }
+  if (e.target.id==='quickform'){
+    e.preventDefault();
+    const n = $('#quickname').value.trim().slice(0,40); if (!n) return;
+    const name = n.charAt(0).toUpperCase()+n.slice(1);
+    put('quick', slug(name), {name, t:Date.now()}); ui.qadd=false; render(); toast(name+' juntou-se aos produtos frequentes');
+    return;
+  }
   if (e.target.id!=='addform') return;
   e.preventDefault();
   const raw = $('#addname').value.trim(); if (!raw) return;
