@@ -1,17 +1,30 @@
 {
-  "name": "Mesa da Família",
-  "short_name": "Mesa",
-  "description": "Receitas para o almoço e jantar da família e lista de compras partilhada.",
+  "name": "Refeições & Compras",
+  "short_name": "Ref. & Compras",
+  "description": "Refeições da família, plano da semana e lista de compras partilhada.",
   "lang": "pt-PT",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#F3F5EF",
-  "theme_color": "#C8432B",
+  "background_color": "#F6F2EA",
+  "theme_color": "#F6F2EA",
   "icons": [
-    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
-    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ]
 }
