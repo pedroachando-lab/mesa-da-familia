@@ -23,15 +23,21 @@ const DEAD = new Set(['messaging/registration-token-not-registered', 'messaging/
 
 const families = await db.collection('families').get();
 for (const fam of families.docs) {
+  // Famílias criadas antes da proteção com chave de convite já não são usadas.
+  if (!fam.get('joinKey')) continue;
   if (!force && fam.get('lastNotified') === today) { console.log(`${fam.id.slice(0, 4)}…: já avisada hoje.`); continue; }
   const tokenDocs = (await fam.ref.collection('tokens').get()).docs.filter(d => d.get('token'));
   if (!tokenDocs.length) continue;
 
   const plan = await fam.ref.collection('plan').doc(`${today}_jantar`).get();
+  const votes = plan.exists ? [] : (await fam.ref.collection('votes').where('date', '==', today).get()).docs
+    .filter(d => d.get('slot') === 'jantar');
   const title = plan.exists ? `Jantar de hoje: ${plan.get('title')}` : 'O que vamos jantar hoje?';
   const body = plan.exists
-    ? 'Já está escolhido e os ingredientes estão na lista de compras.'
-    : 'Ainda ninguém escolheu o jantar. Toque para ver as sugestões.';
+    ? (plan.get('double') ? 'Já está escolhido, a dobrar para a marmita de amanhã.' : 'Já está escolhido e os ingredientes estão na lista de compras.')
+    : votes.length
+      ? `Já há ${votes.length} ${votes.length === 1 ? 'voto' : 'votos'}. Toque para votar também e escolher o jantar.`
+      : 'Ainda ninguém escolheu o jantar. Toque para votar nas sugestões.';
 
   const res = await fcm.sendEachForMulticast({
     tokens: tokenDocs.map(d => d.get('token')),
