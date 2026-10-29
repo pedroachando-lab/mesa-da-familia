@@ -1,0 +1,13 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Cada família vive em families/<código>. O código é aleatório (24 caracteres)
+    // e só quem recebeu o convite o conhece. Ninguém consegue listar as famílias.
+    match /families/{fid} {
+      allow get, create, update: if fid.size() >= 20;
+      match /{document=**} {
+        allow read, write: if fid.size() >= 20;
+      }
+    }
+  }
+}
